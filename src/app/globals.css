@@ -438,13 +438,93 @@ input:focus-visible + span,
 .fretboard-region {
   padding: 0 clamp(1rem, 4vw, 2.5rem) 1.5rem;
 }
+.neck-navigation {
+  display: flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.55rem;
+}
 .scroll-hint {
-  display: none;
-  margin: 0 0 0.65rem;
+  margin: 0;
   color: var(--muted);
   font-size: 0.75rem;
 }
+.neck-progress {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.4rem;
+}
+.neck-progress button {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid rgba(1, 22, 39, 0.3);
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.neck-progress button:hover:not(:disabled),
+.neck-progress button:focus-visible {
+  border-color: var(--ink);
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.neck-progress button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.neck-progress progress {
+  width: clamp(5rem, 12vw, 9rem);
+  height: 0.45rem;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  color: var(--accent-dark);
+  background: rgba(1, 22, 39, 0.14);
+}
+.neck-progress progress::-webkit-progress-bar {
+  background: rgba(1, 22, 39, 0.14);
+}
+.neck-progress progress::-webkit-progress-value,
+.neck-progress progress::-moz-progress-bar {
+  background: var(--accent-dark);
+}
+.fretboard-viewport {
+  position: relative;
+  isolation: isolate;
+}
+.fretboard-viewport::before,
+.fretboard-viewport::after {
+  position: absolute;
+  z-index: 10;
+  top: 2rem;
+  bottom: 0.75rem;
+  width: 2.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+  content: "";
+}
+.fretboard-viewport::before {
+  left: 4.5rem;
+  background: linear-gradient(90deg, rgba(1, 22, 39, 0.28), transparent);
+}
+.fretboard-viewport::after {
+  right: 0;
+  background: linear-gradient(270deg, rgba(1, 22, 39, 0.28), transparent);
+}
+.fretboard-viewport.can-scroll-left::before,
+.fretboard-viewport.can-scroll-right::after {
+  opacity: 1;
+}
 .fretboard-scroll {
+  position: relative;
   width: 100%;
   overflow-x: auto;
   border-radius: 0.65rem;
@@ -460,32 +540,43 @@ input:focus-visible + span,
   grid-template-columns: 4.5rem repeat(var(--fret-columns), minmax(4.4rem, 1fr));
 }
 .fret-numbers {
+  position: sticky;
+  z-index: 7;
+  top: 0;
   height: 2rem;
   color: var(--muted);
   background: var(--panel);
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.7rem;
+  box-shadow: 0 2px 5px rgba(1, 22, 39, 0.12);
 }
 .fret-numbers span {
   display: grid;
   place-items: center;
 }
 .string-heading {
+  position: sticky;
+  z-index: 9;
+  left: 0;
   justify-items: start !important;
   padding-left: 0.6rem;
+  background: var(--panel);
 }
 
 .string-row {
   height: 4.1rem;
 }
 .string-label {
-  z-index: 2;
+  position: sticky;
+  z-index: 6;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 0.7rem;
   color: var(--paper);
   background: var(--ink);
+  box-shadow: 4px 0 7px rgba(1, 22, 39, 0.2);
 }
 .string-label strong {
   font-size: 1rem;
@@ -597,7 +688,9 @@ input:focus-visible + span,
 @media (prefers-reduced-motion: reduce) {
   .note-marker,
   .note-marker::after,
-  .scale-sequence button {
+  .scale-sequence button,
+  .fretboard-viewport::before,
+  .fretboard-viewport::after {
     transition: none;
   }
 }
@@ -612,6 +705,12 @@ input:focus-visible + span,
   justify-content: center;
   gap: 0.35rem;
   border-right: 2px solid rgba(1, 22, 39, 0.32);
+}
+.position-markers > span:first-child {
+  position: sticky;
+  z-index: 5;
+  left: 0;
+  background: var(--wood);
 }
 .position-markers i {
   width: 0.5rem;
@@ -727,6 +826,17 @@ input:focus-visible + span,
   }
   .scroll-hint {
     display: block;
+  }
+  .neck-navigation {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .neck-progress {
+    align-self: flex-end;
+  }
+  .neck-progress progress {
+    width: 4.5rem;
   }
   .fretboard-region {
     padding-inline: 0.75rem;
