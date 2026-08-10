@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 import {
   FRET_COUNT,
   STANDARD_TUNING,
@@ -30,7 +32,11 @@ type FretboardProps = {
 };
 
 const FRETS = Array.from({ length: FRET_COUNT + 1 }, (_, fret) => fret);
-const SINGLE_MARKERS = new Set([3, 5, 7, 9, 15]);
+const SINGLE_MARKERS = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
+const fretboardStyle = {
+  "--fret-columns": FRET_COUNT + 1,
+  "--fretboard-min-width": `${4.5 + (FRET_COUNT + 1) * 4.4}rem`,
+} as CSSProperties;
 
 export function Fretboard({
   root,
@@ -64,7 +70,8 @@ export function Fretboard({
         <div
           className={`fretboard ${handedness}-handed`}
           role="table"
-          aria-label={`Guitar scale notes from fret 0 through 15, ${handedness}-handed, ${stringOrderLabel}`}
+          aria-label={`Guitar scale notes from fret 0 through ${FRET_COUNT}, ${handedness}-handed, ${stringOrderLabel}`}
+          style={fretboardStyle}
         >
           <div className="fret-row fret-numbers" role="row">
             <span className="string-heading" role="columnheader">
@@ -160,7 +167,8 @@ export function Fretboard({
         </div>
       </div>
       <p className="tuning-note">
-        Standard tuning · {stringOrderLabel} · frets 0–15 · {handedness}-handed
+        Standard tuning · {stringOrderLabel} · frets 0–{FRET_COUNT} ·{" "}
+        {handedness}-handed
       </p>
     </div>
   );

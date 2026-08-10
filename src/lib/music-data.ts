@@ -82,4 +82,4 @@ export const STANDARD_TUNING: readonly GuitarString[] = [
   { name: "E", pitchClass: 4, gauge: 6 },
 ];
 
-export const FRET_COUNT = 15;
+export const FRET_COUNT = 22;

@@ -452,12 +452,12 @@ input:focus-visible + span,
 }
 
 .fretboard {
-  min-width: 76rem;
+  min-width: var(--fretboard-min-width);
   background: var(--wood);
 }
 .fret-row {
   display: grid;
-  grid-template-columns: 4.5rem repeat(16, minmax(4.4rem, 1fr));
+  grid-template-columns: 4.5rem repeat(var(--fret-columns), minmax(4.4rem, 1fr));
 }
 .fret-numbers {
   height: 2rem;

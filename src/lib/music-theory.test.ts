@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   CHROMATIC_FLATS,
   CHROMATIC_SHARPS,
+  FRET_COUNT,
   SCALES,
   STANDARD_TUNING,
 } from "./music-data";
@@ -60,6 +61,10 @@ test("a string advances chromatically and wraps after twelve frets", () => {
   assert.equal(getFrettedPitchClass(4, 11), 3);
   assert.equal(getFrettedPitchClass(4, 12), 4);
   assert.equal(getFrettedPitchClass(11, 1), 0);
+});
+
+test("the practice fretboard extends through fret twenty-two", () => {
+  assert.equal(FRET_COUNT, 22);
 });
 
 test("fret twelve matches every open string", () => {
