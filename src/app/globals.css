@@ -126,6 +126,11 @@ select {
   background: rgba(253, 255, 252, 0.1);
 }
 
+select option {
+  color: var(--ink);
+  background: var(--paper);
+}
+
 select:focus-visible,
 input:focus-visible + span,
 .fretboard-scroll:focus-visible {
@@ -310,8 +315,6 @@ input:focus-visible + span,
   border: 2px solid var(--root-dark);
   color: var(--paper);
   background: var(--root);
-  text-decoration: underline;
-  text-underline-offset: 0.12em;
 }
 
 .position-markers {
