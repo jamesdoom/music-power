@@ -593,6 +593,9 @@ input:focus-visible + span,
   border-right: 2px solid rgba(1, 22, 39, 0.32);
   background: linear-gradient(90deg, transparent, rgba(253, 255, 252, 0.45));
 }
+.fretboard.has-selection .fret-cell {
+  cursor: pointer;
+}
 .fret-cell.open-string {
   border-right: 5px double var(--ink);
   background: rgba(255, 159, 28, 0.12);

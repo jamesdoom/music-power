@@ -110,6 +110,24 @@ test("neck controls report and change horizontal position", async ({
   await expect(progress).not.toHaveAttribute("value", "0");
 });
 
+test("clicking an empty fretboard spot clears a pinned note", async ({
+  page,
+}) => {
+  const marker = page.locator(".note-marker").first();
+  await marker.click();
+
+  await expect(marker).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".note-marker.dimmed").first()).toBeVisible();
+
+  await page.locator(".fret-cell:not(:has(.note-marker))").first().click();
+
+  await expect(page.locator('.note-marker[aria-pressed="true"]')).toHaveCount(
+    0,
+  );
+  await expect(page.locator(".note-marker.dimmed")).toHaveCount(0);
+  await expect(page.locator(".note-marker.highlighted")).toHaveCount(0);
+});
+
 test("arrow, home, and end keys navigate note markers", async ({ page }) => {
   const first = page.locator('.note-marker[data-row="0"]').first();
   await first.focus();

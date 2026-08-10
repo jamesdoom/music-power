@@ -5,6 +5,7 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent,
+  type MouseEvent,
 } from "react";
 
 import {
@@ -40,6 +41,7 @@ type FretboardProps = {
   selectedPitchClass: number | null;
   onPreviewPitchClass: (pitchClass: number | null) => void;
   onTogglePitchClass: (pitchClass: number) => void;
+  onClearPitchClass: () => void;
 };
 
 const FRETS = Array.from({ length: FRET_COUNT + 1 }, (_, fret) => fret);
@@ -69,6 +71,7 @@ export function Fretboard({
   selectedPitchClass,
   onPreviewPitchClass,
   onTogglePitchClass,
+  onClearPitchClass,
 }: FretboardProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isInteractive, setIsInteractive] = useState(false);
@@ -148,6 +151,15 @@ export function Fretboard({
     nextMarker.scrollIntoView({ block: "nearest", inline: "center" });
   }
 
+  function handleFretboardClick(event: MouseEvent<HTMLDivElement>) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    if (target.closest(".fret-cell") && !target.closest(".note-marker")) {
+      onClearPitchClass();
+    }
+  }
+
   return (
     <div className="fretboard-region" data-interactive={isInteractive}>
       <div className="neck-navigation">
@@ -191,10 +203,11 @@ export function Fretboard({
           onScroll={updateScrollState}
         >
           <div
-            className={`fretboard ${handedness}-handed`}
+            className={`fretboard ${handedness}-handed ${selectedPitchClass !== null ? "has-selection" : ""}`}
             role="table"
             aria-label={`Guitar scale notes from fret 0 through ${FRET_COUNT}, ${handedness}-handed, ${stringOrderLabel}`}
             style={fretboardStyle}
+            onClick={handleFretboardClick}
           >
             <div className="fret-row fret-numbers" role="row">
               <span className="string-heading" role="columnheader">

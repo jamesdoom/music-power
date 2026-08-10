@@ -71,6 +71,11 @@ export function ScaleExplorer() {
     );
   }
 
+  function clearPitchClass() {
+    setSelectedPitchClass(null);
+    setPreviewPitchClass(null);
+  }
+
   return (
     <section className="explorer" aria-labelledby="current-scale">
       <div className="controls">
@@ -298,6 +303,7 @@ export function ScaleExplorer() {
         selectedPitchClass={selectedPitchClass}
         onPreviewPitchClass={setPreviewPitchClass}
         onTogglePitchClass={togglePitchClass}
+        onClearPitchClass={clearPitchClass}
       />
     </section>
   );
