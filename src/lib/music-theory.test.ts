@@ -1,10 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { SCALES } from "./music-data";
+import {
+  CHROMATIC_FLATS,
+  CHROMATIC_SHARPS,
+  SCALES,
+  STANDARD_TUNING,
+} from "./music-data";
 import {
   getFrettedPitchClass,
   getPitchClassName,
+  getScaleDegree,
   getScalePitchClasses,
 } from "./music-theory";
 
@@ -54,4 +60,43 @@ test("a string advances chromatically and wraps after twelve frets", () => {
   assert.equal(getFrettedPitchClass(4, 11), 3);
   assert.equal(getFrettedPitchClass(4, 12), 4);
   assert.equal(getFrettedPitchClass(11, 1), 0);
+});
+
+test("fret twelve matches every open string", () => {
+  for (const string of STANDARD_TUNING) {
+    assert.equal(
+      getFrettedPitchClass(string.pitchClass, 12),
+      string.pitchClass,
+    );
+  }
+});
+
+test("every scale produces unique pitch classes and contains its root", () => {
+  for (const scale of Object.values(SCALES)) {
+    for (let root = 0; root < 12; root += 1) {
+      const pitchClasses = getScalePitchClasses(root, scale.intervals);
+      assert.equal(pitchClasses.length, scale.intervals.length);
+      assert.equal(new Set(pitchClasses).size, pitchClasses.length);
+      assert.ok(pitchClasses.includes(root));
+    }
+  }
+});
+
+test("enharmonic preferences preserve pitch classes", () => {
+  assert.equal(getPitchClassName(1, "sharps"), "C♯");
+  assert.equal(getPitchClassName(1, "flats"), "D♭");
+  assert.equal(getPitchClassName(10, "sharps"), "A♯");
+  assert.equal(getPitchClassName(10, "flats"), "B♭");
+  assert.equal(CHROMATIC_SHARPS.length, CHROMATIC_FLATS.length);
+});
+
+test("blues scale degrees map to their pitch classes", () => {
+  const dRoot = 2;
+  const pitchClasses = getScalePitchClasses(dRoot, SCALES.blues.intervals);
+  assert.deepEqual(
+    pitchClasses.map((pitchClass) =>
+      getScaleDegree(pitchClass, dRoot, SCALES.blues),
+    ),
+    ["1", "♭3", "4", "♭5", "5", "♭7"],
+  );
 });

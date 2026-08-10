@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import {
   CHROMATIC_FLATS,
@@ -24,9 +24,12 @@ export function ScaleExplorer() {
   const scale = SCALES[scaleId];
   const rootNames =
     accidentals === "flats" ? CHROMATIC_FLATS : CHROMATIC_SHARPS;
-  const scalePitchClasses = useMemo(
-    () => new Set(getScalePitchClasses(root, scale.intervals)),
-    [root, scale],
+  const scalePitchClassList = getScalePitchClasses(root, scale.intervals);
+  const scalePitchClasses = new Set(scalePitchClassList);
+  const scaleNoteNames = scalePitchClassList.map((pitchClass) =>
+    accidentals === "flats"
+      ? CHROMATIC_FLATS[pitchClass]
+      : CHROMATIC_SHARPS[pitchClass],
   );
 
   return (
@@ -112,11 +115,27 @@ export function ScaleExplorer() {
       </div>
 
       <div className="scale-summary">
-        <div>
+        <div className="scale-identity">
           <p className="summary-label">Now viewing</p>
           <h2 id="current-scale">
             {rootNames[root]} {scale.name}
           </h2>
+          <ol
+            className="scale-sequence scale-note-sequence"
+            aria-label="Scale notes"
+          >
+            {scaleNoteNames.map((note, index) => (
+              <li key={`${note}-${scale.intervals[index]}`}>{note}</li>
+            ))}
+          </ol>
+          <ol
+            className="scale-sequence scale-degree-sequence"
+            aria-label="Scale degrees"
+          >
+            {scale.degrees.map((degree) => (
+              <li key={degree}>{degree}</li>
+            ))}
+          </ol>
         </div>
         <div className="legend" aria-label="Fretboard legend">
           <span>
