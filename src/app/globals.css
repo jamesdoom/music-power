@@ -46,6 +46,13 @@ main {
   padding: clamp(2rem, 4.5vw, 4.5rem) 0 3rem;
 }
 
+.hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 25rem);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+}
+
 .hero {
   max-width: 46rem;
 }
@@ -84,6 +91,158 @@ h1 {
   color: var(--muted);
   font-size: clamp(1rem, 2vw, 1.25rem);
   line-height: 1.55;
+}
+
+.practice-pulse {
+  padding: 1.15rem;
+  border: 1px solid rgba(46, 196, 182, 0.35);
+  border-radius: 1rem;
+  color: var(--paper);
+  background: var(--ink);
+  box-shadow: 0 1rem 2.5rem rgba(1, 22, 39, 0.14);
+}
+
+.pulse-heading,
+.tool-heading,
+.pulse-split,
+.timer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pulse-kicker {
+  margin: 0 0 0.2rem;
+  color: var(--accent);
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pulse-heading h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: -0.025em;
+}
+
+.pulse-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--root);
+  box-shadow: 0 0 0 0.3rem rgba(231, 29, 54, 0.16);
+}
+
+.pulse-tool {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(253, 255, 252, 0.14);
+}
+
+.tool-heading,
+.tool-label {
+  color: rgba(253, 255, 252, 0.75);
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.tool-heading output {
+  color: var(--focus);
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 750;
+}
+
+.metronome-tool input[type="range"] {
+  width: 100%;
+  margin: 0.65rem 0 0.75rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.pulse-button,
+.timer-presets button,
+.text-button {
+  min-height: 2.25rem;
+  border-radius: 0.45rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.pulse-button {
+  padding: 0 0.8rem;
+  border: 1px solid rgba(253, 255, 252, 0.28);
+  color: var(--paper);
+  background: rgba(253, 255, 252, 0.08);
+}
+
+.primary-pulse-button {
+  width: 100%;
+}
+
+.pulse-button[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--ink);
+  background: var(--accent);
+}
+
+.pulse-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.pulse-split strong {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--focus);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.timer-presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  margin: 0.65rem 0;
+}
+
+.timer-presets button {
+  border: 1px solid rgba(253, 255, 252, 0.2);
+  color: rgba(253, 255, 252, 0.72);
+  background: transparent;
+}
+
+.timer-presets button.selected {
+  border-color: var(--focus);
+  color: var(--ink);
+  background: var(--focus);
+}
+
+.timer-actions .pulse-button {
+  flex: 1;
+}
+
+.text-button {
+  padding: 0 0.5rem;
+  border: 0;
+  color: rgba(253, 255, 252, 0.7);
+  background: transparent;
+}
+
+.pulse-button:hover:not(:disabled),
+.timer-presets button:hover,
+.text-button:hover {
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.pulse-button:focus-visible,
+.timer-presets button:focus-visible,
+.text-button:focus-visible,
+.metronome-tool input[type="range"]:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .explorer {
@@ -353,6 +512,10 @@ input:focus-visible + span,
 }
 
 @media (max-width: 62rem) {
+  .hero-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+    gap: 2rem;
+  }
   .controls {
     grid-template-columns: 1fr 1.4fr;
   }
@@ -368,6 +531,13 @@ input:focus-visible + span,
   }
   .explorer {
     border-radius: 0.9rem;
+  }
+  .hero-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .practice-pulse {
+    width: 100%;
   }
   .controls {
     grid-template-columns: 1fr 1fr;
