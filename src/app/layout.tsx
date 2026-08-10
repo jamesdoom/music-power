@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Scale Atlas | Guitar Fretboard",
+  title: "Music Power | Guitar Fretboard",
   description: "Explore guitar scales across the fretboard.",
 };
 

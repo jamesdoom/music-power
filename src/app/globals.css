@@ -1,15 +1,16 @@
 :root {
-  --ink: #20211e;
-  --muted: #686b63;
-  --paper: #f5f3ec;
-  --panel: #fffdf7;
-  --line: #d7d1c2;
-  --wood: #e7dcc6;
-  --wood-dark: #bcae94;
-  --accent: #1d6252;
-  --accent-dark: #123f36;
-  --root: #d05d38;
-  --root-dark: #8f321b;
+  --ink: #011627;
+  --muted: rgba(1, 22, 39, 0.68);
+  --paper: #fdfffc;
+  --panel: #fdfffc;
+  --line: rgba(1, 22, 39, 0.2);
+  --wood: rgba(46, 196, 182, 0.12);
+  --wood-dark: #2ec4b6;
+  --accent: #2ec4b6;
+  --accent-dark: #011627;
+  --root: #e71d36;
+  --root-dark: #011627;
+  --focus: #ff9f1c;
 }
 
 * {
@@ -24,7 +25,11 @@ body {
   margin: 0;
   color: var(--ink);
   background:
-    radial-gradient(circle at 10% 0%, rgba(29, 98, 82, 0.1), transparent 32rem),
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(46, 196, 182, 0.2),
+      transparent 32rem
+    ),
     var(--paper);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
@@ -63,6 +68,16 @@ h1 {
   line-height: 0.9;
 }
 
+.brand-heading {
+  max-width: 34rem;
+  line-height: 0;
+}
+
+.brand-logo {
+  width: 100%;
+  height: auto;
+}
+
 .lede {
   max-width: 34rem;
   margin: 1.35rem 0 0;
@@ -73,10 +88,10 @@ h1 {
 
 .explorer {
   margin-top: clamp(2.5rem, 6vw, 5rem);
-  border: 1px solid rgba(104, 107, 99, 0.25);
+  border: 1px solid var(--line);
   border-radius: 1.25rem;
-  background: rgba(255, 253, 247, 0.88);
-  box-shadow: 0 1.5rem 4rem rgba(52, 46, 34, 0.08);
+  background: rgba(253, 255, 252, 0.9);
+  box-shadow: 0 1.5rem 4rem rgba(1, 22, 39, 0.1);
   overflow: hidden;
 }
 
@@ -96,7 +111,7 @@ h1 {
 }
 .select-control label,
 fieldset legend {
-  color: #cfcec7;
+  color: rgba(253, 255, 252, 0.75);
   font-size: 0.78rem;
   font-weight: 650;
 }
@@ -105,16 +120,16 @@ select {
   min-height: 2.75rem;
   width: 100%;
   padding: 0 2.5rem 0 0.8rem;
-  border: 1px solid #5c5e57;
+  border: 1px solid rgba(253, 255, 252, 0.3);
   border-radius: 0.5rem;
-  color: white;
-  background: #30312d;
+  color: var(--paper);
+  background: rgba(253, 255, 252, 0.1);
 }
 
 select:focus-visible,
 input:focus-visible + span,
 .fretboard-scroll:focus-visible {
-  outline: 3px solid #f0b764;
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -140,8 +155,8 @@ input:focus-visible + span,
   min-height: 2.75rem;
   padding: 0 0.85rem;
   place-items: center;
-  border: 1px solid #5c5e57;
-  background: #30312d;
+  border: 1px solid rgba(253, 255, 252, 0.3);
+  background: rgba(253, 255, 252, 0.1);
   font-size: 0.85rem;
   font-weight: 650;
 }
@@ -154,7 +169,7 @@ input:focus-visible + span,
 }
 .segmented-control input:checked + span {
   color: var(--ink);
-  background: #f4f1e8;
+  background: var(--focus);
 }
 
 .scale-summary {
@@ -245,14 +260,14 @@ input:focus-visible + span,
   align-items: center;
   justify-content: space-between;
   padding: 0 0.7rem;
-  color: white;
+  color: var(--paper);
   background: var(--ink);
 }
 .string-label strong {
   font-size: 1rem;
 }
 .string-label small {
-  color: #aaa9a3;
+  color: rgba(253, 255, 252, 0.66);
   font-family: var(--font-geist-mono), monospace;
 }
 
@@ -260,20 +275,20 @@ input:focus-visible + span,
   position: relative;
   display: grid;
   place-items: center;
-  border-right: 2px solid rgba(75, 71, 61, 0.48);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1));
+  border-right: 2px solid rgba(1, 22, 39, 0.32);
+  background: linear-gradient(90deg, transparent, rgba(253, 255, 252, 0.45));
 }
 .fret-cell.open-string {
-  border-right: 5px double #5e594f;
-  background: #efe9dc;
+  border-right: 5px double var(--ink);
+  background: rgba(255, 159, 28, 0.12);
 }
 .string-line {
   position: absolute;
   inset-inline: 0;
   top: 50%;
   translate: 0 -50%;
-  background: #817866;
-  box-shadow: 0 1px rgba(255, 255, 255, 0.8);
+  background: rgba(1, 22, 39, 0.58);
+  box-shadow: 0 1px rgba(253, 255, 252, 0.9);
 }
 
 .note-marker {
@@ -284,16 +299,17 @@ input:focus-visible + span,
   place-items: center;
   border: 2px solid var(--accent-dark);
   border-radius: 50%;
-  color: white;
+  color: var(--ink);
   background: var(--accent);
-  box-shadow: 0 2px 5px rgba(31, 31, 27, 0.22);
+  box-shadow: 0 2px 5px rgba(1, 22, 39, 0.25);
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.72rem;
   font-style: normal;
 }
 .note-marker.root-note {
-  border: 3px double white;
+  border: 3px double var(--paper);
   outline: 2px solid var(--root-dark);
+  color: var(--paper);
   background: var(--root);
 }
 
@@ -306,13 +322,13 @@ input:focus-visible + span,
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  border-right: 2px solid rgba(75, 71, 61, 0.48);
+  border-right: 2px solid rgba(1, 22, 39, 0.32);
 }
 .position-markers i {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: #8e826d;
+  background: var(--focus);
 }
 .tuning-note {
   margin: 0.75rem 0 0;
