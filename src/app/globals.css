@@ -307,10 +307,11 @@ input:focus-visible + span,
   font-style: normal;
 }
 .note-marker.root-note {
-  border: 3px double var(--paper);
-  outline: 2px solid var(--root-dark);
+  border: 2px solid var(--root-dark);
   color: var(--paper);
   background: var(--root);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
 }
 
 .position-markers {
