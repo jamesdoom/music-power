@@ -370,6 +370,32 @@ input:focus-visible + span,
   white-space: nowrap;
 }
 
+.scale-sequence button {
+  padding: 0.15rem 0.25rem;
+  border: 0;
+  border-radius: 0.25rem;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease;
+}
+
+.scale-sequence button:hover,
+.scale-sequence button:focus-visible,
+.scale-sequence button.active {
+  color: var(--ink);
+  background: rgba(46, 196, 182, 0.25);
+  outline: 2px solid transparent;
+}
+
+.scale-sequence button:focus-visible {
+  outline-color: var(--focus);
+  outline-offset: 2px;
+}
+
 .scale-sequence li + li::before {
   margin: 0 0.45rem;
   color: var(--muted);
@@ -402,6 +428,7 @@ input:focus-visible + span,
 }
 .legend-note {
   background: var(--accent);
+  border: 2px solid var(--accent-dark);
 }
 .legend-root {
   background: var(--root);
@@ -494,6 +521,7 @@ input:focus-visible + span,
 }
 
 .note-marker {
+  position: relative;
   z-index: 1;
   display: grid;
   width: 2.35rem;
@@ -507,11 +535,71 @@ input:focus-visible + span,
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.72rem;
   font-style: normal;
+  cursor: pointer;
+  transition:
+    opacity 140ms ease,
+    scale 140ms ease,
+    box-shadow 140ms ease;
 }
 .note-marker.root-note {
   border: 2px solid var(--root-dark);
   color: var(--paper);
   background: var(--root);
+}
+
+.note-marker:hover,
+.note-marker:focus-visible,
+.note-marker.highlighted {
+  z-index: 4;
+  scale: 1.12;
+  box-shadow:
+    0 0 0 3px var(--paper),
+    0 3px 8px rgba(1, 22, 39, 0.38);
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.note-marker.dimmed {
+  opacity: 0.32;
+}
+
+.note-marker::after {
+  position: absolute;
+  z-index: 6;
+  bottom: calc(100% + 0.65rem);
+  left: 50%;
+  width: max-content;
+  max-width: 13rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.35rem;
+  color: var(--paper);
+  background: var(--ink);
+  box-shadow: 0 3px 9px rgba(1, 22, 39, 0.3);
+  content: attr(data-tooltip);
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+  opacity: 0;
+  pointer-events: none;
+  translate: -50% 0.25rem;
+  transition:
+    opacity 120ms ease,
+    translate 120ms ease;
+}
+
+.note-marker:hover::after,
+.note-marker:focus-visible::after {
+  opacity: 1;
+  translate: -50% 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-marker,
+  .note-marker::after,
+  .scale-sequence button {
+    transition: none;
+  }
 }
 
 .position-markers {

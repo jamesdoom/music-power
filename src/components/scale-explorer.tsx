@@ -24,10 +24,21 @@ export function ScaleExplorer() {
     parseSelection(searchParams),
   );
   const selectionRef = useRef(selection);
+  const [selectedPitchClass, setSelectedPitchClass] = useState<number | null>(
+    null,
+  );
+  const [previewPitchClass, setPreviewPitchClass] = useState<number | null>(
+    null,
+  );
   const { root, scaleId, markerLabel, accidentals, handedness, stringOrder } =
     selection;
 
   function updateSelection(patch: Partial<ScaleSelection>) {
+    if (patch.root !== undefined || patch.scaleId !== undefined) {
+      setSelectedPitchClass(null);
+      setPreviewPitchClass(null);
+    }
+
     const nextSelection = { ...selectionRef.current, ...patch };
     selectionRef.current = nextSelection;
     setSelection(nextSelection);
@@ -52,6 +63,13 @@ export function ScaleExplorer() {
       ? CHROMATIC_FLATS[pitchClass]
       : CHROMATIC_SHARPS[pitchClass],
   );
+  const activePitchClass = previewPitchClass ?? selectedPitchClass;
+
+  function togglePitchClass(pitchClass: number) {
+    setSelectedPitchClass((current) =>
+      current === pitchClass ? null : pitchClass,
+    );
+  }
 
   return (
     <section className="explorer" aria-labelledby="current-scale">
@@ -198,15 +216,61 @@ export function ScaleExplorer() {
             aria-label="Scale notes"
           >
             {scaleNoteNames.map((note, index) => (
-              <li key={`${note}-${scale.intervals[index]}`}>{note}</li>
+              <li key={`${note}-${scale.intervals[index]}`}>
+                <button
+                  type="button"
+                  className={
+                    activePitchClass === scalePitchClassList[index]
+                      ? "active"
+                      : undefined
+                  }
+                  aria-pressed={
+                    selectedPitchClass === scalePitchClassList[index]
+                  }
+                  onClick={() => togglePitchClass(scalePitchClassList[index])}
+                  onPointerEnter={() =>
+                    setPreviewPitchClass(scalePitchClassList[index])
+                  }
+                  onPointerLeave={() => setPreviewPitchClass(null)}
+                  onFocus={() =>
+                    setPreviewPitchClass(scalePitchClassList[index])
+                  }
+                  onBlur={() => setPreviewPitchClass(null)}
+                >
+                  {note}
+                </button>
+              </li>
             ))}
           </ol>
           <ol
             className="scale-sequence scale-degree-sequence"
             aria-label="Scale degrees"
           >
-            {scale.degrees.map((degree) => (
-              <li key={degree}>{degree}</li>
+            {scale.degrees.map((degree, index) => (
+              <li key={degree}>
+                <button
+                  type="button"
+                  className={
+                    activePitchClass === scalePitchClassList[index]
+                      ? "active"
+                      : undefined
+                  }
+                  aria-pressed={
+                    selectedPitchClass === scalePitchClassList[index]
+                  }
+                  onClick={() => togglePitchClass(scalePitchClassList[index])}
+                  onPointerEnter={() =>
+                    setPreviewPitchClass(scalePitchClassList[index])
+                  }
+                  onPointerLeave={() => setPreviewPitchClass(null)}
+                  onFocus={() =>
+                    setPreviewPitchClass(scalePitchClassList[index])
+                  }
+                  onBlur={() => setPreviewPitchClass(null)}
+                >
+                  {degree}
+                </button>
+              </li>
             ))}
           </ol>
         </div>
@@ -230,6 +294,10 @@ export function ScaleExplorer() {
         accidentals={accidentals}
         handedness={handedness}
         stringOrder={stringOrder}
+        activePitchClass={activePitchClass}
+        selectedPitchClass={selectedPitchClass}
+        onPreviewPitchClass={setPreviewPitchClass}
+        onTogglePitchClass={togglePitchClass}
       />
     </section>
   );

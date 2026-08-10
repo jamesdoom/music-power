@@ -23,6 +23,10 @@ type FretboardProps = {
   accidentals: AccidentalPreference;
   handedness: Handedness;
   stringOrder: StringOrder;
+  activePitchClass: number | null;
+  selectedPitchClass: number | null;
+  onPreviewPitchClass: (pitchClass: number | null) => void;
+  onTogglePitchClass: (pitchClass: number) => void;
 };
 
 const FRETS = Array.from({ length: FRET_COUNT + 1 }, (_, fret) => fret);
@@ -36,6 +40,10 @@ export function Fretboard({
   accidentals,
   handedness,
   stringOrder,
+  activePitchClass,
+  selectedPitchClass,
+  onPreviewPitchClass,
+  onTogglePitchClass,
 }: FretboardProps) {
   const displayedFrets = handedness === "left" ? [...FRETS].reverse() : FRETS;
   const displayedStrings =
@@ -90,6 +98,10 @@ export function Fretboard({
                 const degree = getScaleDegree(pitchClass, root, scale);
                 const displayedLabel =
                   markerLabel === "notes" ? noteName : degree;
+                const isHighlighted = activePitchClass === pitchClass;
+                const isDimmed =
+                  activePitchClass !== null && activePitchClass !== pitchClass;
+                const detailLabel = `${noteName} · degree ${degree} · string ${string.gauge} · fret ${fret}`;
 
                 return (
                   <span
@@ -109,12 +121,21 @@ export function Fretboard({
                       }}
                     />
                     {isScaleNote ? (
-                      <strong
-                        className={`note-marker ${isRoot ? "root-note" : ""}`}
+                      <button
+                        type="button"
+                        className={`note-marker ${isRoot ? "root-note" : ""} ${isHighlighted ? "highlighted" : ""} ${isDimmed ? "dimmed" : ""}`}
+                        aria-label={`${detailLabel}${isRoot ? ", root note" : ""}`}
+                        aria-pressed={selectedPitchClass === pitchClass}
+                        data-tooltip={detailLabel}
+                        onClick={() => onTogglePitchClass(pitchClass)}
+                        onPointerEnter={() => onPreviewPitchClass(pitchClass)}
+                        onPointerLeave={() => onPreviewPitchClass(null)}
+                        onFocus={() => onPreviewPitchClass(pitchClass)}
+                        onBlur={() => onPreviewPitchClass(null)}
                       >
                         {displayedLabel}
                         <span className="sr-only">{isRoot ? " root" : ""}</span>
-                      </strong>
+                      </button>
                     ) : null}
                   </span>
                 );
