@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/lib/music-theory.test.ts src/lib/practice-tools.test.ts",
+    "test": "tsx --test src/lib/music-theory.test.ts src/lib/practice-tools.test.ts src/lib/selection-state.test.ts",
     "format:check": "prettier --check .",
     "format": "prettier --write ."
   },

@@ -1,25 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useRef, useState } from "react";
 
 import {
   CHROMATIC_FLATS,
   CHROMATIC_SHARPS,
   SCALES,
-  type AccidentalPreference,
   type ScaleId,
 } from "@/lib/music-data";
 import { getScalePitchClasses } from "@/lib/music-theory";
+import {
+  parseSelection,
+  serializeSelection,
+  type ScaleSelection,
+} from "@/lib/selection-state";
 import { Fretboard } from "./fretboard";
 
-export type MarkerLabel = "notes" | "degrees";
-
 export function ScaleExplorer() {
-  const [root, setRoot] = useState(0);
-  const [scaleId, setScaleId] = useState<ScaleId>("major");
-  const [markerLabel, setMarkerLabel] = useState<MarkerLabel>("notes");
-  const [accidentals, setAccidentals] =
-    useState<AccidentalPreference>("sharps");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [selection, setSelection] = useState(() =>
+    parseSelection(searchParams),
+  );
+  const selectionRef = useRef(selection);
+  const { root, scaleId, markerLabel, accidentals, handedness, stringOrder } =
+    selection;
+
+  function updateSelection(patch: Partial<ScaleSelection>) {
+    const nextSelection = { ...selectionRef.current, ...patch };
+    selectionRef.current = nextSelection;
+    setSelection(nextSelection);
+    const params = serializeSelection(
+      nextSelection,
+      new URLSearchParams(window.location.search),
+    );
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${pathname}?${params.toString()}${window.location.hash}`,
+    );
+  }
 
   const scale = SCALES[scaleId];
   const rootNames =
@@ -40,7 +61,9 @@ export function ScaleExplorer() {
           <select
             id="root-note"
             value={root}
-            onChange={(event) => setRoot(Number(event.target.value))}
+            onChange={(event) =>
+              updateSelection({ root: Number(event.target.value) })
+            }
           >
             {rootNames.map((note, pitchClass) => (
               <option key={pitchClass} value={pitchClass}>
@@ -55,7 +78,9 @@ export function ScaleExplorer() {
           <select
             id="scale-type"
             value={scaleId}
-            onChange={(event) => setScaleId(event.target.value as ScaleId)}
+            onChange={(event) =>
+              updateSelection({ scaleId: event.target.value as ScaleId })
+            }
           >
             {Object.entries(SCALES).map(([id, definition]) => (
               <option key={id} value={id}>
@@ -73,7 +98,7 @@ export function ScaleExplorer() {
               name="marker-label"
               value="notes"
               checked={markerLabel === "notes"}
-              onChange={() => setMarkerLabel("notes")}
+              onChange={() => updateSelection({ markerLabel: "notes" })}
             />
             <span>Notes</span>
           </label>
@@ -83,7 +108,7 @@ export function ScaleExplorer() {
               name="marker-label"
               value="degrees"
               checked={markerLabel === "degrees"}
-              onChange={() => setMarkerLabel("degrees")}
+              onChange={() => updateSelection({ markerLabel: "degrees" })}
             />
             <span>Degrees</span>
           </label>
@@ -97,7 +122,7 @@ export function ScaleExplorer() {
               name="accidentals"
               value="sharps"
               checked={accidentals === "sharps"}
-              onChange={() => setAccidentals("sharps")}
+              onChange={() => updateSelection({ accidentals: "sharps" })}
             />
             <span>Sharps</span>
           </label>
@@ -107,9 +132,57 @@ export function ScaleExplorer() {
               name="accidentals"
               value="flats"
               checked={accidentals === "flats"}
-              onChange={() => setAccidentals("flats")}
+              onChange={() => updateSelection({ accidentals: "flats" })}
             />
             <span>Flats</span>
+          </label>
+        </fieldset>
+
+        <fieldset className="segmented-control">
+          <legend>Handedness</legend>
+          <label>
+            <input
+              type="radio"
+              name="handedness"
+              value="right"
+              checked={handedness === "right"}
+              onChange={() => updateSelection({ handedness: "right" })}
+            />
+            <span>Right</span>
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="handedness"
+              value="left"
+              checked={handedness === "left"}
+              onChange={() => updateSelection({ handedness: "left" })}
+            />
+            <span>Left</span>
+          </label>
+        </fieldset>
+
+        <fieldset className="segmented-control string-order-control">
+          <legend>String order</legend>
+          <label>
+            <input
+              type="radio"
+              name="string-order"
+              value="high-to-low"
+              checked={stringOrder === "high-to-low"}
+              onChange={() => updateSelection({ stringOrder: "high-to-low" })}
+            />
+            <span>High → low</span>
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="string-order"
+              value="low-to-high"
+              checked={stringOrder === "low-to-high"}
+              onChange={() => updateSelection({ stringOrder: "low-to-high" })}
+            />
+            <span>Low → high</span>
           </label>
         </fieldset>
       </div>
@@ -155,6 +228,8 @@ export function ScaleExplorer() {
         scalePitchClasses={scalePitchClasses}
         markerLabel={markerLabel}
         accidentals={accidentals}
+        handedness={handedness}
+        stringOrder={stringOrder}
       />
     </section>
   );

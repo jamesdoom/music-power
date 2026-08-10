@@ -9,7 +9,11 @@ import {
   getPitchClassName,
   getScaleDegree,
 } from "@/lib/music-theory";
-import type { MarkerLabel } from "./scale-explorer";
+import type {
+  Handedness,
+  MarkerLabel,
+  StringOrder,
+} from "@/lib/selection-state";
 
 type FretboardProps = {
   root: number;
@@ -17,6 +21,8 @@ type FretboardProps = {
   scalePitchClasses: ReadonlySet<number>;
   markerLabel: MarkerLabel;
   accidentals: AccidentalPreference;
+  handedness: Handedness;
+  stringOrder: StringOrder;
 };
 
 const FRETS = Array.from({ length: FRET_COUNT + 1 }, (_, fret) => fret);
@@ -28,32 +34,42 @@ export function Fretboard({
   scalePitchClasses,
   markerLabel,
   accidentals,
+  handedness,
+  stringOrder,
 }: FretboardProps) {
+  const displayedFrets = handedness === "left" ? [...FRETS].reverse() : FRETS;
+  const displayedStrings =
+    stringOrder === "low-to-high"
+      ? [...STANDARD_TUNING].reverse()
+      : STANDARD_TUNING;
+  const stringOrderLabel =
+    stringOrder === "low-to-high" ? "low E to high E" : "high E to low E";
+
   return (
     <div className="fretboard-region">
-      <p className="scroll-hint">Scroll sideways to see higher frets</p>
+      <p className="scroll-hint">Scroll sideways to see all frets</p>
       <div
         className="fretboard-scroll"
         tabIndex={0}
         aria-label="Scrollable guitar fretboard"
       >
         <div
-          className="fretboard"
+          className={`fretboard ${handedness}-handed`}
           role="table"
-          aria-label="Guitar scale notes from fret 0 through 15"
+          aria-label={`Guitar scale notes from fret 0 through 15, ${handedness}-handed, ${stringOrderLabel}`}
         >
           <div className="fret-row fret-numbers" role="row">
             <span className="string-heading" role="columnheader">
               String
             </span>
-            {FRETS.map((fret) => (
+            {displayedFrets.map((fret) => (
               <span key={fret} role="columnheader">
                 {fret}
               </span>
             ))}
           </div>
 
-          {STANDARD_TUNING.map((string, stringIndex) => (
+          {displayedStrings.map((string) => (
             <div
               className="fret-row string-row"
               role="row"
@@ -63,7 +79,7 @@ export function Fretboard({
                 <strong>{string.name}</strong>
                 <small>{string.gauge}</small>
               </span>
-              {FRETS.map((fret) => {
+              {displayedFrets.map((fret) => {
                 const pitchClass = getFrettedPitchClass(
                   string.pitchClass,
                   fret,
@@ -89,7 +105,7 @@ export function Fretboard({
                     <i
                       className="string-line"
                       style={{
-                        height: `${1 + stringIndex * 0.32}px`,
+                        height: `${1 + (string.gauge - 1) * 0.32}px`,
                       }}
                     />
                     {isScaleNote ? (
@@ -108,7 +124,7 @@ export function Fretboard({
 
           <div className="fret-row position-markers" aria-hidden="true">
             <span />
-            {FRETS.map((fret) => (
+            {displayedFrets.map((fret) => (
               <span key={fret}>
                 {SINGLE_MARKERS.has(fret) ? <i /> : null}
                 {fret === 12 ? (
@@ -123,7 +139,7 @@ export function Fretboard({
         </div>
       </div>
       <p className="tuning-note">
-        Standard tuning · high E to low E · frets 0–15
+        Standard tuning · {stringOrderLabel} · frets 0–15 · {handedness}-handed
       </p>
     </div>
   );

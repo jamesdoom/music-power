@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Suspense } from "react";
 
 import { PracticePulse } from "./practice-pulse";
 import { ScaleExplorer } from "./scale-explorer";
@@ -25,7 +26,18 @@ export function MusicPractice() {
         </header>
         <PracticePulse />
       </div>
-      <ScaleExplorer />
+      <Suspense
+        fallback={
+          <section
+            className="explorer explorer-loading"
+            aria-label="Loading scale explorer"
+          >
+            Loading fretboard…
+          </section>
+        }
+      >
+        <ScaleExplorer />
+      </Suspense>
     </main>
   );
 }
