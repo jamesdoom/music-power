@@ -14,12 +14,8 @@ import { Fretboard } from "./fretboard";
 
 export type MarkerLabel = "notes" | "degrees";
 
-type ScaleExplorerProps = {
-  root: number;
-  onRootChange: (root: number) => void;
-};
-
-export function ScaleExplorer({ root, onRootChange }: ScaleExplorerProps) {
+export function ScaleExplorer() {
+  const [root, setRoot] = useState(0);
   const [scaleId, setScaleId] = useState<ScaleId>("major");
   const [markerLabel, setMarkerLabel] = useState<MarkerLabel>("notes");
   const [accidentals, setAccidentals] =
@@ -41,7 +37,7 @@ export function ScaleExplorer({ root, onRootChange }: ScaleExplorerProps) {
           <select
             id="root-note"
             value={root}
-            onChange={(event) => onRootChange(Number(event.target.value))}
+            onChange={(event) => setRoot(Number(event.target.value))}
           >
             {rootNames.map((note, pitchClass) => (
               <option key={pitchClass} value={pitchClass}>

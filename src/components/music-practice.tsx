@@ -1,14 +1,9 @@
-"use client";
-
 import Image from "next/image";
-import { useState } from "react";
 
 import { PracticePulse } from "./practice-pulse";
 import { ScaleExplorer } from "./scale-explorer";
 
 export function MusicPractice() {
-  const [root, setRoot] = useState(0);
-
   return (
     <main>
       <div className="hero-layout">
@@ -28,9 +23,9 @@ export function MusicPractice() {
             Choose a key and trace its shape across every string.
           </p>
         </header>
-        <PracticePulse root={root} />
+        <PracticePulse />
       </div>
-      <ScaleExplorer root={root} onRootChange={setRoot} />
+      <ScaleExplorer />
     </main>
   );
 }

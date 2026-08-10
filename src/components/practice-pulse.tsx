@@ -2,25 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { CHROMATIC_SHARPS } from "@/lib/music-data";
-import { formatDuration, getTonicFrequency } from "@/lib/practice-tools";
-
-type PracticePulseProps = {
-  root: number;
-};
+import { formatDuration } from "@/lib/practice-tools";
 
 const TIMER_PRESETS = [5, 10, 15] as const;
 
-export function PracticePulse({ root }: PracticePulseProps) {
+export function PracticePulse() {
   const [bpm, setBpm] = useState(80);
   const [metronomeOn, setMetronomeOn] = useState(false);
-  const [droneOn, setDroneOn] = useState(false);
   const [timerMinutes, setTimerMinutes] = useState(5);
   const [secondsRemaining, setSecondsRemaining] = useState(5 * 60);
   const [timerRunning, setTimerRunning] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const droneOscillatorRef = useRef<OscillatorNode | null>(null);
-  const droneGainRef = useRef<GainNode | null>(null);
 
   const getAudioContext = useCallback((): AudioContext => {
     const context = audioContextRef.current ?? new AudioContext();
@@ -42,38 +34,6 @@ export function PracticePulse({ root }: PracticePulseProps) {
     oscillator.stop(context.currentTime + 0.05);
   }, [getAudioContext]);
 
-  function toggleDrone() {
-    if (droneOn) {
-      const oscillator = droneOscillatorRef.current;
-      droneGainRef.current?.gain.setTargetAtTime(
-        0.0001,
-        audioContextRef.current?.currentTime ?? 0,
-        0.03,
-      );
-      window.setTimeout(() => oscillator?.stop(), 180);
-      droneOscillatorRef.current = null;
-      droneGainRef.current = null;
-      setDroneOn(false);
-      return;
-    }
-
-    const context = getAudioContext();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = "triangle";
-    oscillator.frequency.setValueAtTime(
-      getTonicFrequency(root),
-      context.currentTime,
-    );
-    gain.gain.setValueAtTime(0.0001, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.055, context.currentTime + 0.12);
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start();
-    droneOscillatorRef.current = oscillator;
-    droneGainRef.current = gain;
-    setDroneOn(true);
-  }
-
   function chooseTimer(minutes: number) {
     setTimerMinutes(minutes);
     setSecondsRemaining(minutes * 60);
@@ -86,16 +46,6 @@ export function PracticePulse({ root }: PracticePulseProps) {
     const interval = window.setInterval(playClick, 60_000 / bpm);
     return () => window.clearInterval(interval);
   }, [bpm, metronomeOn, playClick]);
-
-  useEffect(() => {
-    if (!droneOn || !audioContextRef.current || !droneOscillatorRef.current)
-      return;
-    droneOscillatorRef.current.frequency.setTargetAtTime(
-      getTonicFrequency(root),
-      audioContextRef.current.currentTime,
-      0.04,
-    );
-  }, [droneOn, root]);
 
   useEffect(() => {
     if (!timerRunning) return;
@@ -113,7 +63,6 @@ export function PracticePulse({ root }: PracticePulseProps) {
 
   useEffect(
     () => () => {
-      droneOscillatorRef.current?.stop();
       void audioContextRef.current?.close();
     },
     [],
@@ -151,21 +100,6 @@ export function PracticePulse({ root }: PracticePulseProps) {
           onClick={() => setMetronomeOn((current) => !current)}
         >
           {metronomeOn ? "Stop click" : "Start click"}
-        </button>
-      </div>
-
-      <div className="pulse-tool pulse-split">
-        <div>
-          <span className="tool-label">Tonic drone</span>
-          <strong>{CHROMATIC_SHARPS[root]}3</strong>
-        </div>
-        <button
-          className="pulse-button"
-          type="button"
-          aria-pressed={droneOn}
-          onClick={toggleDrone}
-        >
-          {droneOn ? "Stop" : "Play"}
         </button>
       </div>
 
