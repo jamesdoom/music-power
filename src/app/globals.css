@@ -285,9 +285,14 @@ select {
   background: rgba(253, 255, 252, 0.1);
 }
 
-select option {
+select option,
+select optgroup {
   color: var(--ink);
   background: var(--paper);
+}
+
+select optgroup {
+  font-weight: 700;
 }
 
 select:focus-visible,

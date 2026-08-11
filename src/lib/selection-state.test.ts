@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { SCALES, type ScaleId } from "./music-data";
 import {
   DEFAULT_SELECTION,
   parseSelection,
@@ -62,4 +63,11 @@ test("serialization is canonical and preserves unrelated parameters", () => {
   assert.equal(params.get("labels"), "degrees");
   assert.equal(params.get("ref"), "teacher");
   assert.deepEqual(parseSelection(params), selection);
+});
+
+test("every catalog scale round-trips through its shareable URL slug", () => {
+  for (const scaleId of Object.keys(SCALES) as ScaleId[]) {
+    const selection = { ...DEFAULT_SELECTION, scaleId };
+    assert.deepEqual(parseSelection(serializeSelection(selection)), selection);
+  }
 });

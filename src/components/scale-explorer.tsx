@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import {
   CHROMATIC_FLATS,
   CHROMATIC_SHARPS,
+  SCALE_GROUP_LABELS,
   SCALES,
   type ScaleId,
 } from "@/lib/music-data";
@@ -105,10 +106,16 @@ export function ScaleExplorer() {
               updateSelection({ scaleId: event.target.value as ScaleId })
             }
           >
-            {Object.entries(SCALES).map(([id, definition]) => (
-              <option key={id} value={id}>
-                {definition.name}
-              </option>
+            {Object.entries(SCALE_GROUP_LABELS).map(([groupId, label]) => (
+              <optgroup key={groupId} label={label}>
+                {Object.entries(SCALES)
+                  .filter(([, definition]) => definition.group === groupId)
+                  .map(([id, definition]) => (
+                    <option key={id} value={id}>
+                      {definition.name}
+                    </option>
+                  ))}
+              </optgroup>
             ))}
           </select>
         </div>

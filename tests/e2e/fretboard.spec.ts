@@ -88,6 +88,38 @@ test("renders an accessible, contained 22-fret neck", async ({ page }) => {
   });
 });
 
+test("groups the complete scale catalog and updates shareable state", async ({
+  page,
+}) => {
+  const scaleSelect = page.getByLabel("Scale", { exact: true });
+  const catalog = await scaleSelect.evaluate((select) => ({
+    groups: [...select.querySelectorAll("optgroup")].map(
+      (group) => group.label,
+    ),
+    options: select.querySelectorAll("option").length,
+  }));
+
+  expect(catalog.groups).toEqual([
+    "Major scale modes",
+    "Melodic minor modes",
+    "Symmetric scales",
+    "Pentatonic scales",
+    "Blues scales",
+    "Bebop scales",
+    "Harmonic scales",
+  ]);
+  expect(catalog.options).toBe(30);
+
+  await scaleSelect.selectOption("altered");
+  await expect(
+    page.getByRole("heading", { name: "D Altered (diminished whole-tone)" }),
+  ).toBeVisible();
+  await expect(page.getByRole("list", { name: "Scale degrees" })).toHaveText(
+    /1.*♭2.*♯2.*3.*♭5.*♯5.*♭7/,
+  );
+  await expect(page).toHaveURL(/scale=altered/);
+});
+
 test("neck controls report and change horizontal position", async ({
   page,
 }) => {

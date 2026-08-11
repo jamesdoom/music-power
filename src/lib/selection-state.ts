@@ -1,6 +1,7 @@
 import {
   CHROMATIC_FLATS,
   CHROMATIC_SHARPS,
+  SCALES,
   type AccidentalPreference,
   type ScaleId,
 } from "./music-data";
@@ -27,16 +28,8 @@ export const DEFAULT_SELECTION: ScaleSelection = {
   stringOrder: "high-to-low",
 };
 
-const SCALE_SLUGS: Record<ScaleId, string> = {
-  major: "major",
-  naturalMinor: "natural-minor",
-  majorPentatonic: "major-pentatonic",
-  minorPentatonic: "minor-pentatonic",
-  blues: "blues",
-};
-
-const SCALE_IDS_BY_SLUG = new Map(
-  Object.entries(SCALE_SLUGS).map(([id, slug]) => [slug, id as ScaleId]),
+const SCALE_IDS_BY_SLUG = new Map<string, ScaleId>(
+  Object.entries(SCALES).map(([id, scale]) => [scale.slug, id as ScaleId]),
 );
 
 const ROOTS_BY_NAME = new Map<string, number>();
@@ -105,7 +98,7 @@ export function serializeSelection(
 ): URLSearchParams {
   const next = new URLSearchParams(params);
   next.set("root", queryRootName(selection.root, selection.accidentals));
-  next.set("scale", SCALE_SLUGS[selection.scaleId]);
+  next.set("scale", SCALES[selection.scaleId].slug);
   next.set("labels", selection.markerLabel);
   next.set("accidentals", selection.accidentals);
   next.set("handedness", selection.handedness);
