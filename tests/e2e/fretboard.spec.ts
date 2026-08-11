@@ -365,6 +365,14 @@ test("builds an ordered chord group with compact playable fingerings", async ({
   await expect(progression.getByRole("heading", { name: "C" })).toBeVisible();
   await expect(progression.getByRole("heading", { name: "G7" })).toHaveCount(2);
 
+  const viewportWidth = page.viewportSize()?.width ?? 0;
+  for (const card of await progression.locator(".chord-group-card").all()) {
+    const box = await card.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(viewportWidth + 1);
+  }
+
   if (testInfo.project.name === "mobile") {
     await progression.getByRole("button", { name: "Move C later" }).click();
     await progression.getByRole("button", { name: "Move C later" }).click();
