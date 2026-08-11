@@ -17,6 +17,8 @@ type Props = {
 
 export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
   const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<number | null>(null);
+  const [settledId, setSettledId] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState("");
 
   function move(fromIndex: number, toIndex: number, chordName: string) {
@@ -29,7 +31,9 @@ export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
     if (fromIndex < 0 || fromIndex === targetIndex) return;
     const item = items[fromIndex];
     move(fromIndex, targetIndex, chordName(item, noteNames));
+    setSettledId(item.id);
     setDraggedId(null);
+    setDropTargetId(null);
   }
 
   return (
@@ -66,12 +70,60 @@ export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
             return (
               <li
                 key={item.id}
-                className={draggedId === item.id ? "dragging" : undefined}
+                className={[
+                  draggedId === item.id ? "dragging" : "",
+                  dropTargetId === item.id ? "drop-target" : "",
+                  settledId === item.id ? "drop-settled" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 onDragOver={(event) => event.preventDefault()}
+                onDragEnter={() => {
+                  if (draggedId !== null && draggedId !== item.id) {
+                    setDropTargetId(item.id);
+                  }
+                }}
                 onDrop={() => drop(index)}
               >
-                <article className="chord-group-card">
-                  <header>
+                <article
+                  className="chord-group-card"
+                  onAnimationEnd={() => setSettledId(null)}
+                >
+                  <header
+                    draggable
+                    tabIndex={0}
+                    aria-label={`Drag ${name} at position ${index + 1} to reorder. Use left and right arrow keys.`}
+                    title="Drag card to reorder"
+                    onDragStart={(event) => {
+                      if ((event.target as HTMLElement).closest("button")) {
+                        event.preventDefault();
+                        return;
+                      }
+                      const card = event.currentTarget.closest("article");
+                      if (card) event.dataTransfer.setDragImage(card, 24, 24);
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData("text/plain", String(item.id));
+                      setDraggedId(item.id);
+                    }}
+                    onDragEnd={() => {
+                      setDraggedId(null);
+                      setDropTargetId(null);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget) return;
+                      if (event.key === "ArrowLeft" && index > 0) {
+                        event.preventDefault();
+                        move(index, index - 1, name);
+                      }
+                      if (
+                        event.key === "ArrowRight" &&
+                        index < items.length - 1
+                      ) {
+                        event.preventDefault();
+                        move(index, index + 1, name);
+                      }
+                    }}
+                  >
                     <span
                       className="chord-order"
                       aria-label={`Chord ${index + 1}`}
@@ -82,37 +134,6 @@ export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
                       <h4>{name}</h4>
                       <p>{CHORDS[item.chordId].name}</p>
                     </div>
-                    <button
-                      type="button"
-                      className="chord-drag-handle"
-                      draggable
-                      onDragStart={(event) => {
-                        event.dataTransfer.effectAllowed = "move";
-                        event.dataTransfer.setData(
-                          "text/plain",
-                          String(item.id),
-                        );
-                        setDraggedId(item.id);
-                      }}
-                      onDragEnd={() => setDraggedId(null)}
-                      onKeyDown={(event) => {
-                        if (event.key === "ArrowLeft" && index > 0) {
-                          event.preventDefault();
-                          move(index, index - 1, name);
-                        }
-                        if (
-                          event.key === "ArrowRight" &&
-                          index < items.length - 1
-                        ) {
-                          event.preventDefault();
-                          move(index, index + 1, name);
-                        }
-                      }}
-                      aria-label={`Reorder ${name} at position ${index + 1}. Use left and right arrow keys.`}
-                      title="Drag to reorder"
-                    >
-                      <span aria-hidden="true">⠿</span>
-                    </button>
                     <div className="chord-card-actions">
                       <button
                         type="button"

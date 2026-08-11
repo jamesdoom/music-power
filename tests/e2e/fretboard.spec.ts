@@ -349,7 +349,7 @@ test("chord diagram and mode controls are keyboard accessible", async ({
 
 test("builds an ordered chord group with compact playable fingerings", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.getByRole("button", { name: "Chord explorer" }).click();
   await expect(page.getByText(/Add chords above/)).toBeVisible();
 
@@ -365,16 +365,22 @@ test("builds an ordered chord group with compact playable fingerings", async ({
   await expect(progression.getByRole("heading", { name: "C" })).toBeVisible();
   await expect(progression.getByRole("heading", { name: "G7" })).toHaveCount(2);
 
-  await progression
-    .getByRole("button", { name: "Move G7 earlier" })
-    .first()
-    .click();
+  if (testInfo.project.name === "mobile") {
+    await progression.getByRole("button", { name: "Move C later" }).click();
+    await progression.getByRole("button", { name: "Move C later" }).click();
+  } else {
+    await progression
+      .locator(".chord-group-card header")
+      .first()
+      .dragTo(progression.getByRole("listitem").nth(2));
+  }
+  await expect(progression.getByRole("heading")).toHaveText(["G7", "G7", "C"]);
+
+  await progression.getByRole("button", { name: "Move C earlier" }).click();
   await expect(progression.getByRole("heading")).toHaveText(["G7", "C", "G7"]);
 
-  await progression
-    .getByRole("button", { name: /Reorder C at position 2/ })
-    .press("ArrowRight");
-  await expect(progression.getByRole("heading")).toHaveText(["G7", "G7", "C"]);
+  await progression.getByLabel(/Drag C at position 2/).press("ArrowLeft");
+  await expect(progression.getByRole("heading")).toHaveText(["C", "G7", "G7"]);
 
   await page.getByRole("button", { name: "View C" }).click();
   await expect(

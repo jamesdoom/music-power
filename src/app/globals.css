@@ -736,43 +736,44 @@ input:focus-visible + span,
 }
 
 .chord-group-list > li.dragging {
-  opacity: 0.45;
+  opacity: 0.5;
+  transform: scale(0.985) rotate(-0.35deg);
+}
+
+.chord-group-list > li.drop-target .chord-group-card {
+  border-color: var(--focus);
+  box-shadow:
+    0 0 0 3px rgba(255, 159, 28, 0.3),
+    0 0.8rem 1.75rem rgba(1, 22, 39, 0.13);
+  transform: translateY(-0.2rem);
+}
+
+.chord-group-list > li.drop-settled .chord-group-card {
+  animation: chord-card-settle 220ms ease-out;
 }
 
 .chord-group-card header {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.65rem;
   align-items: center;
   padding: 0.75rem;
   color: var(--paper);
   background: var(--ink);
-}
-
-.chord-drag-handle {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  place-items: center;
-  border: 1px solid rgba(253, 255, 252, 0.3);
-  border-radius: 0.4rem;
-  color: var(--paper);
-  background: rgba(253, 255, 252, 0.08);
   cursor: grab;
-  font-size: 1.15rem;
-  line-height: 1;
 }
 
-.chord-drag-handle:active {
+.chord-group-card header:active {
   cursor: grabbing;
 }
 
-.chord-drag-handle:hover,
-.chord-drag-handle:focus-visible {
-  color: var(--ink);
-  background: var(--focus);
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
+.chord-group-card header:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+.chord-group-card header button {
+  cursor: pointer;
 }
 
 .chord-order {
@@ -1180,6 +1181,11 @@ input:focus-visible + span,
   .fretboard-viewport::after {
     transition: none;
   }
+  .chord-group-list > li,
+  .chord-group-card {
+    transition: none;
+    animation: none !important;
+  }
 }
 
 .position-markers {
@@ -1383,6 +1389,23 @@ input:focus-visible + span,
     from {
       opacity: 0;
       scale: 0.85;
+    }
+  }
+  .chord-group-list > li,
+  .chord-group-card {
+    transition:
+      opacity 140ms ease,
+      transform 140ms ease,
+      border-color 140ms ease,
+      box-shadow 140ms ease;
+  }
+  @keyframes chord-card-settle {
+    0% {
+      transform: scale(1.025);
+      box-shadow: 0 1rem 2rem rgba(1, 22, 39, 0.18);
+    }
+    100% {
+      transform: scale(1);
     }
   }
 }
