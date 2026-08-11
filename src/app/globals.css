@@ -457,6 +457,31 @@ input:focus-visible + span,
   align-items: center;
 }
 
+.chord-summary-actions {
+  display: grid;
+  justify-items: end;
+  gap: 0.8rem;
+}
+
+.add-chord-button {
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 2px solid var(--ink);
+  border-radius: 0.55rem;
+  color: var(--paper);
+  background: var(--ink);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.add-chord-button:hover,
+.add-chord-button:focus-visible {
+  color: var(--ink);
+  background: var(--focus);
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
 .chord-quality-name {
   margin: 0.15rem 0 0;
   color: var(--muted);
@@ -658,6 +683,198 @@ input:focus-visible + span,
   background: var(--ink);
   font-size: 0.6rem;
   font-weight: 800;
+}
+
+.chord-group {
+  padding: clamp(1.25rem, 3vw, 2rem) clamp(1rem, 4vw, 2.5rem) 2rem;
+  border-top: 1px solid var(--line);
+  background: rgba(46, 196, 182, 0.06);
+}
+
+.chord-group-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.chord-group-heading h3 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+}
+
+.clear-chord-group,
+.chord-card-actions button {
+  min-height: 2.25rem;
+  padding: 0 0.7rem;
+  border: 1px solid rgba(1, 22, 39, 0.28);
+  border-radius: 0.4rem;
+  color: var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.clear-chord-group:hover,
+.clear-chord-group:focus-visible,
+.chord-card-actions button:hover,
+.chord-card-actions button:focus-visible {
+  border-color: var(--ink);
+  background: var(--focus);
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.empty-chord-group {
+  margin: 1rem 0 0;
+  padding: 1.1rem;
+  border: 1px dashed rgba(1, 22, 39, 0.25);
+  border-radius: 0.65rem;
+  color: var(--muted);
+  background: rgba(253, 255, 252, 0.7);
+  font-size: 0.85rem;
+}
+
+.chord-group-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chord-group-card {
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--paper);
+  box-shadow: 0 0.5rem 1.25rem rgba(1, 22, 39, 0.08);
+}
+
+.chord-group-card header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.75rem;
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.chord-order {
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--focus);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.chord-group-card h4,
+.chord-group-card header p {
+  margin: 0;
+}
+
+.chord-group-card h4 {
+  font-size: 1.1rem;
+}
+
+.chord-group-card header p {
+  color: rgba(253, 255, 252, 0.65);
+  font-size: 0.68rem;
+}
+
+.chord-card-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.chord-card-actions button {
+  min-height: 2rem;
+  border-color: rgba(253, 255, 252, 0.3);
+  color: var(--paper);
+  background: rgba(253, 255, 252, 0.08);
+}
+
+.compact-neck {
+  display: grid;
+  grid-template-columns: 2rem repeat(var(--compact-frets), minmax(2.5rem, 1fr));
+  min-width: 16.5rem;
+  background: var(--wood);
+}
+
+.compact-corner,
+.compact-fret-number {
+  display: grid;
+  min-height: 1.4rem;
+  place-items: center;
+  color: var(--muted);
+  background: var(--panel);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.56rem;
+}
+
+.compact-string {
+  display: contents;
+}
+
+.compact-string-status {
+  display: grid;
+  min-height: 2.15rem;
+  place-items: center;
+  color: var(--paper);
+  background: var(--ink);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.62rem;
+}
+
+.compact-fret {
+  position: relative;
+  display: grid;
+  min-height: 2.15rem;
+  place-items: center;
+  border-right: 1px solid rgba(1, 22, 39, 0.35);
+  background: linear-gradient(90deg, transparent, rgba(253, 255, 252, 0.5));
+}
+
+.compact-open-fret {
+  border-right: 3px double var(--ink);
+  background: rgba(255, 159, 28, 0.1);
+}
+
+.compact-fret i {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  translate: 0 -50%;
+  background: rgba(1, 22, 39, 0.62);
+}
+
+.compact-fret b {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 1.45rem;
+  height: 1.45rem;
+  place-items: center;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--accent);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.58rem;
+}
+
+.compact-fret b.root {
+  color: var(--paper);
+  background: var(--root);
 }
 
 .legend {
@@ -1085,6 +1302,19 @@ input:focus-visible + span,
     align-items: start;
     flex-direction: column;
     gap: 1rem;
+  }
+  .chord-summary-actions {
+    width: 100%;
+    justify-items: start;
+  }
+  .add-chord-button {
+    width: 100%;
+  }
+  .chord-group-card header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .chord-card-actions {
+    grid-column: 1 / -1;
   }
   .scroll-hint {
     display: block;

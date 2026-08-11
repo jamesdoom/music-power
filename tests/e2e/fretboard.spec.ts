@@ -346,3 +346,34 @@ test("chord diagram and mode controls are keyboard accessible", async ({
     page.getByRole("button", { name: "Scale explorer" }),
   ).toHaveAttribute("aria-pressed", "false");
 });
+
+test("builds an ordered chord group with compact playable fingerings", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "Chord explorer" }).click();
+  await expect(page.getByText(/Add chords above/)).toBeVisible();
+
+  await page.getByRole("button", { name: "Add C to group" }).click();
+  await page.getByLabel("Root note").selectOption("7");
+  await page.getByLabel("Chord quality").selectOption("dominant7");
+  await page.getByRole("button", { name: "Add G7 to group" }).click();
+  await page.getByRole("button", { name: "Add G7 to group" }).click();
+
+  const progression = page.getByLabel("Selected chord progression");
+  await expect(progression.getByRole("listitem")).toHaveCount(3);
+  await expect(progression.locator(".compact-neck")).toHaveCount(3);
+  await expect(progression.getByRole("heading", { name: "C" })).toBeVisible();
+  await expect(progression.getByRole("heading", { name: "G7" })).toHaveCount(2);
+
+  await page.getByRole("button", { name: "View C" }).click();
+  await expect(
+    page.getByRole("heading", { name: "C", exact: true }).first(),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Remove G7 at position 2" }).click();
+  await expect(progression.getByRole("listitem")).toHaveCount(2);
+
+  await page.getByRole("button", { name: "Clear group" }).click();
+  await expect(progression).not.toBeVisible();
+  await expect(page.getByText(/Add chords above/)).toBeVisible();
+});

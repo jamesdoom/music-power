@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 
 import { CHORDS, type ChordId } from "@/lib/chord-data";
 import {
@@ -17,6 +17,13 @@ import {
 } from "@/lib/music-data";
 import { normalizePitchClass } from "@/lib/music-theory";
 import type { MarkerLabel } from "@/lib/selection-state";
+import { CompactChordDiagram } from "./compact-chord-diagram";
+
+type ChordGroupItem = {
+  id: number;
+  root: number;
+  chordId: ChordId;
+};
 
 export function ChordExplorer() {
   const [root, setRoot] = useState(0);
@@ -24,6 +31,8 @@ export function ChordExplorer() {
   const [labels, setLabels] = useState<MarkerLabel>("notes");
   const [accidentals, setAccidentals] =
     useState<AccidentalPreference>("sharps");
+  const [chordGroup, setChordGroup] = useState<ChordGroupItem[]>([]);
+  const nextGroupId = useRef(1);
 
   const chord = CHORDS[chordId];
   const voicing = getPreferredVoicing(root, chordId);
@@ -49,6 +58,12 @@ export function ChordExplorer() {
         normalizePitchClass(pitchClass - root),
       )
     ];
+  }
+
+  function addCurrentChord() {
+    const item = { id: nextGroupId.current, root, chordId };
+    nextGroupId.current += 1;
+    setChordGroup((current) => [...current, item]);
   }
 
   return (
@@ -141,19 +156,29 @@ export function ChordExplorer() {
             ))}
           </ol>
         </div>
-        <div
-          className="chord-notation-legend"
-          aria-label="Chord diagram legend"
-        >
-          <span>
-            <b>○</b> Open
-          </span>
-          <span>
-            <b>×</b> Muted
-          </span>
-          <span>
-            <b>1–4</b> Fingers
-          </span>
+        <div className="chord-summary-actions">
+          <button
+            type="button"
+            className="add-chord-button"
+            onClick={addCurrentChord}
+          >
+            Add {names[root]}
+            {chord.symbol} to group
+          </button>
+          <div
+            className="chord-notation-legend"
+            aria-label="Chord diagram legend"
+          >
+            <span>
+              <b>○</b> Open
+            </span>
+            <span>
+              <b>×</b> Muted
+            </span>
+            <span>
+              <b>1–4</b> Fingers
+            </span>
+          </div>
         </div>
       </div>
 
@@ -243,6 +268,87 @@ export function ChordExplorer() {
           Standard tuning · strings shown high E to low E · × means mute
         </p>
       </div>
+
+      <section className="chord-group" aria-labelledby="chord-group-title">
+        <div className="chord-group-heading">
+          <div>
+            <p className="summary-label">Play-along workspace</p>
+            <h3 id="chord-group-title">Your chord group</h3>
+          </div>
+          {chordGroup.length > 0 && (
+            <button
+              type="button"
+              className="clear-chord-group"
+              onClick={() => setChordGroup([])}
+            >
+              Clear group
+            </button>
+          )}
+        </div>
+        {chordGroup.length === 0 ? (
+          <p className="empty-chord-group">
+            Add chords above to keep their fingerings together in song order.
+          </p>
+        ) : (
+          <ol
+            className="chord-group-list"
+            aria-label="Selected chord progression"
+          >
+            {chordGroup.map((item, index) => {
+              const itemChord = CHORDS[item.chordId];
+              const chordName = `${names[item.root]}${itemChord.symbol}`;
+              return (
+                <li key={item.id}>
+                  <article className="chord-group-card">
+                    <header>
+                      <span
+                        className="chord-order"
+                        aria-label={`Chord ${index + 1}`}
+                      >
+                        {index + 1}
+                      </span>
+                      <div>
+                        <h4>{chordName}</h4>
+                        <p>{itemChord.name}</p>
+                      </div>
+                      <div className="chord-card-actions">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRoot(item.root);
+                            setChordId(item.chordId);
+                          }}
+                          aria-label={`View ${chordName}`}
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setChordGroup((current) =>
+                              current.filter(
+                                (candidate) => candidate.id !== item.id,
+                              ),
+                            )
+                          }
+                          aria-label={`Remove ${chordName} at position ${index + 1}`}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </header>
+                    <CompactChordDiagram
+                      root={item.root}
+                      chordId={item.chordId}
+                      noteNames={names}
+                    />
+                  </article>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </section>
     </section>
   );
 }
