@@ -4,6 +4,7 @@ import test from "node:test";
 import { CHORDS, type ChordId } from "./chord-data";
 import {
   getChordPitchClasses,
+  getLowARootFret,
   getLowERootFret,
   getPreferredVoicing,
   getVoicingPitchClasses,
@@ -21,10 +22,21 @@ test("the low-E root position transposes and wraps chromatically", () => {
   assert.equal(getLowERootFret(3), 11);
 });
 
+test("A-string root positions transpose and wrap chromatically", () => {
+  assert.equal(getLowARootFret(9), 0);
+  assert.equal(getLowARootFret(11), 2);
+  assert.equal(getLowARootFret(8), 11);
+});
+
 test("familiar open shapes are preferred before movable fallbacks", () => {
   assert.equal(getPreferredVoicing(0, "major").name, "Open C");
   assert.equal(getPreferredVoicing(9, "minor").name, "Open A minor");
   assert.equal(getPreferredVoicing(1, "major").kind, "movable");
+  assert.equal(getPreferredVoicing(11, "major").name, "Low-A root shape");
+  assert.deepEqual(
+    getPreferredVoicing(11, "major").strings.map((string) => string.fret),
+    [null, 2, 4, 4, 4, 2],
+  );
 });
 
 test("every preferred voicing contains only chord tones and all defining tones", () => {

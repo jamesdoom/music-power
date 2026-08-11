@@ -76,6 +76,7 @@ export type ChordVoicing = {
 export type PreferredChordVoicing = {
   kind: "open" | "movable";
   name: string;
+  rootFret?: number;
   strings: readonly { fret: number | null; finger: 1 | 2 | 3 | 4 | null }[];
   barre?: { fret: number; fromString: number; toString: number };
 };
@@ -181,6 +182,45 @@ export const LOW_E_VOICINGS: Record<ChordId, ChordVoicing> = {
     barre: { offset: 0, fromString: 6, toString: 1 },
   },
 };
+
+// Low A to high E, with the low E muted. These compact A-string-root shapes
+// let the selector choose a position nearer the nut than an E-shape barre.
+export const LOW_A_VOICINGS: Record<ChordId, ChordVoicing> = {
+  major: aShape([0, 2, 2, 2, 0], [1, 2, 3, 4, 1]),
+  minor: aShape([0, 2, 2, 1, 0], [1, 3, 4, 2, 1]),
+  dominant7: aShape([0, 2, 0, 2, 0], [1, 3, 1, 4, 1]),
+  major7: aShape([0, 2, 1, 2, 0], [1, 4, 2, 3, 1]),
+  minor7: aShape([0, 2, 0, 1, 0], [1, 3, 1, 2, 1]),
+  diminished: {
+    strings: [
+      { offset: null, finger: null },
+      { offset: 0, finger: 1 },
+      { offset: 1, finger: 2 },
+      { offset: 2, finger: 4 },
+      { offset: 1, finger: 3 },
+      { offset: null, finger: null },
+    ],
+  },
+  augmented: aShape([0, 3, 2, 2, 1], [1, 4, 2, 3, 1]),
+  suspended2: aShape([0, 2, 2, 0, 0], [1, 3, 4, 1, 1]),
+  suspended4: aShape([0, 2, 2, 3, 0], [1, 2, 3, 4, 1]),
+};
+
+function aShape(
+  offsets: readonly number[],
+  fingers: readonly (1 | 2 | 3 | 4)[],
+): ChordVoicing {
+  return {
+    strings: [
+      { offset: null, finger: null },
+      ...offsets.map((offset, index) => ({
+        offset,
+        finger: fingers[index],
+      })),
+    ],
+    barre: { offset: 0, fromString: 5, toString: 1 },
+  };
+}
 
 const OPEN_VOICINGS: Record<string, PreferredChordVoicing> = {
   "0:major": open("Open C", [null, 3, 2, 0, 1, 0], [null, 3, 2, null, 1, null]),

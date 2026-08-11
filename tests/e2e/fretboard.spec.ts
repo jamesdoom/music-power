@@ -307,6 +307,16 @@ test("chord explorer renders and updates a horizontal six-string voicing", async
   await expect(page.getByText("Open position", { exact: true })).toBeVisible();
   await expect(page.locator(".chord-note-marker")).toHaveCount(5);
 
+  await page.getByLabel("Root note").selectOption("11");
+  await expect(
+    page.getByRole("heading", { name: "B", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Low-A root shape" }),
+  ).toBeVisible();
+  await expect(page.getByText("Root at fret")).toContainText("2");
+  await expect(page.locator(".chord-note-marker")).toHaveCount(5);
+
   await page.getByLabel("Root note").selectOption("7");
   await page.getByLabel("Chord quality").selectOption("dominant7");
 

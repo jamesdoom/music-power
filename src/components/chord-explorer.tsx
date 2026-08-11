@@ -5,7 +5,6 @@ import { useState, type CSSProperties } from "react";
 import { CHORDS, type ChordId } from "@/lib/chord-data";
 import {
   getChordPitchClasses,
-  getLowERootFret,
   getPreferredVoicing,
   getVoicingFrets,
   getVoicingPitchClasses,
@@ -32,7 +31,7 @@ export function ChordExplorer() {
   const chordPitchClasses = getChordPitchClasses(root, chordId);
   const voicingFrets = getVoicingFrets(root, chordId);
   const voicingPitchClasses = getVoicingPitchClasses(root, chordId);
-  const rootFret = getLowERootFret(root);
+  const rootFret = voicing.rootFret ?? 0;
   const firstVisibleFret = voicing.kind === "open" ? 0 : rootFret;
   const visibleFrets = Array.from(
     { length: 5 },
