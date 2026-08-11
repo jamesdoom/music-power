@@ -5,6 +5,7 @@ import { CHORDS, type ChordId } from "./chord-data";
 import {
   getChordPitchClasses,
   getLowERootFret,
+  getPreferredVoicing,
   getVoicingPitchClasses,
 } from "./chord-theory";
 
@@ -20,7 +21,13 @@ test("the low-E root position transposes and wraps chromatically", () => {
   assert.equal(getLowERootFret(3), 11);
 });
 
-test("every curated voicing contains only tones from its chord formula", () => {
+test("familiar open shapes are preferred before movable fallbacks", () => {
+  assert.equal(getPreferredVoicing(0, "major").name, "Open C");
+  assert.equal(getPreferredVoicing(9, "minor").name, "Open A minor");
+  assert.equal(getPreferredVoicing(1, "major").kind, "movable");
+});
+
+test("every preferred voicing contains only chord tones and all defining tones", () => {
   for (const chordId of Object.keys(CHORDS) as ChordId[]) {
     for (let root = 0; root < 12; root += 1) {
       const chordTones = new Set(getChordPitchClasses(root, chordId));
@@ -32,10 +39,11 @@ test("every curated voicing contains only tones from its chord formula", () => {
         soundingTones.every((pitchClass) => chordTones.has(pitchClass)),
         `${root} ${chordId} contains a non-chord tone`,
       );
+      const requiredTones = getChordPitchClasses(root, chordId).filter(
+        (_, index) => CHORDS[chordId].degrees[index] !== "5",
+      );
       assert.ok(
-        [...chordTones].every((pitchClass) =>
-          soundingTones.includes(pitchClass),
-        ),
+        requiredTones.every((pitchClass) => soundingTones.includes(pitchClass)),
         `${root} ${chordId} omits a required chord tone`,
       );
     }

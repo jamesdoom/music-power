@@ -303,7 +303,9 @@ test("chord explorer renders and updates a horizontal six-string voicing", async
   await expect(page.getByLabel("Chord notes")).toContainText("C");
   await expect(page.getByLabel("Chord notes")).toContainText("E");
   await expect(page.getByLabel("Chord notes")).toContainText("G");
-  await expect(page.locator(".chord-note-marker")).toHaveCount(6);
+  await expect(page.getByRole("heading", { name: "Open C" })).toBeVisible();
+  await expect(page.getByText("Open position", { exact: true })).toBeVisible();
+  await expect(page.locator(".chord-note-marker")).toHaveCount(5);
 
   await page.getByLabel("Root note").selectOption("7");
   await page.getByLabel("Chord quality").selectOption("dominant7");
@@ -312,7 +314,8 @@ test("chord explorer renders and updates a horizontal six-string voicing", async
     page.getByRole("heading", { name: "G7", exact: true }),
   ).toBeVisible();
   await expect(page.getByLabel("Chord formula")).toContainText("♭7");
-  await expect(page.getByText("Root at fret")).toContainText("3");
+  await expect(page.getByRole("heading", { name: "Open G7" })).toBeVisible();
+  await expect(page.getByText("Open position", { exact: true })).toBeVisible();
   await expect(page.locator(".chord-note-marker.root-note")).toHaveCount(2);
 
   await page.getByText("Degrees", { exact: true }).click();

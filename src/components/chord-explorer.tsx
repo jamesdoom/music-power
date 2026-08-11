@@ -2,10 +2,11 @@
 
 import { useState, type CSSProperties } from "react";
 
-import { CHORDS, LOW_E_VOICINGS, type ChordId } from "@/lib/chord-data";
+import { CHORDS, type ChordId } from "@/lib/chord-data";
 import {
   getChordPitchClasses,
   getLowERootFret,
+  getPreferredVoicing,
   getVoicingFrets,
   getVoicingPitchClasses,
 } from "@/lib/chord-theory";
@@ -26,15 +27,16 @@ export function ChordExplorer() {
     useState<AccidentalPreference>("sharps");
 
   const chord = CHORDS[chordId];
-  const voicing = LOW_E_VOICINGS[chordId];
+  const voicing = getPreferredVoicing(root, chordId);
   const names = accidentals === "flats" ? CHROMATIC_FLATS : CHROMATIC_SHARPS;
   const chordPitchClasses = getChordPitchClasses(root, chordId);
   const voicingFrets = getVoicingFrets(root, chordId);
   const voicingPitchClasses = getVoicingPitchClasses(root, chordId);
   const rootFret = getLowERootFret(root);
+  const firstVisibleFret = voicing.kind === "open" ? 0 : rootFret;
   const visibleFrets = Array.from(
     { length: 5 },
-    (_, index) => rootFret + index,
+    (_, index) => firstVisibleFret + index,
   );
   const displayStrings = [...STANDARD_TUNING];
   const displayFrets = [...voicingFrets].reverse();
@@ -159,11 +161,17 @@ export function ChordExplorer() {
       <div className="chord-diagram-region">
         <div className="mini-neck-heading">
           <div>
-            <p className="summary-label">Movable voicing</p>
-            <h3>Low-E root shape</h3>
+            <p className="summary-label">Preferred voicing</p>
+            <h3>{voicing.name}</h3>
           </div>
           <p>
-            Root at fret <strong>{rootFret}</strong>
+            {voicing.kind === "open" ? (
+              "Open position"
+            ) : (
+              <>
+                Root at fret <strong>{rootFret}</strong>
+              </>
+            )}
           </p>
         </div>
         <div
@@ -204,9 +212,8 @@ export function ChordExplorer() {
                   {visibleFrets.map((fret) => (
                     <div
                       className={`mini-fret-cell gauge-${string.gauge} ${fret === 0 ? "open-mini-fret" : ""} ${
-                        rootFret > 0 &&
                         voicing.barre &&
-                        fret === rootFret + voicing.barre.offset &&
+                        fret === voicing.barre.fret &&
                         stringNumber >= voicing.barre.toString &&
                         stringNumber <= voicing.barre.fromString
                           ? "barre-cell"
