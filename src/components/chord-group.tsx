@@ -1,0 +1,172 @@
+"use client";
+
+import { useState } from "react";
+
+import { moveItem } from "@/lib/array-order";
+import { CHORDS, type ChordId } from "@/lib/chord-data";
+import { CompactChordDiagram } from "./compact-chord-diagram";
+
+export type ChordGroupItem = { id: number; root: number; chordId: ChordId };
+
+type Props = {
+  items: ChordGroupItem[];
+  noteNames: readonly string[];
+  onItemsChange: (items: ChordGroupItem[]) => void;
+  onView: (item: ChordGroupItem) => void;
+};
+
+export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
+  const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [announcement, setAnnouncement] = useState("");
+
+  function move(fromIndex: number, toIndex: number, chordName: string) {
+    onItemsChange(moveItem(items, fromIndex, toIndex));
+    setAnnouncement(`${chordName} moved to position ${toIndex + 1}.`);
+  }
+
+  function drop(targetIndex: number) {
+    const fromIndex = items.findIndex((item) => item.id === draggedId);
+    if (fromIndex < 0 || fromIndex === targetIndex) return;
+    const item = items[fromIndex];
+    move(fromIndex, targetIndex, chordName(item, noteNames));
+    setDraggedId(null);
+  }
+
+  return (
+    <section className="chord-group" aria-labelledby="chord-group-title">
+      <p className="sr-only" role="status" aria-live="polite">
+        {announcement}
+      </p>
+      <div className="chord-group-heading">
+        <div>
+          <p className="summary-label">Play-along workspace</p>
+          <h3 id="chord-group-title">Your chord group</h3>
+        </div>
+        {items.length > 0 && (
+          <button
+            type="button"
+            className="clear-chord-group"
+            onClick={() => onItemsChange([])}
+          >
+            Clear group
+          </button>
+        )}
+      </div>
+      {items.length === 0 ? (
+        <p className="empty-chord-group">
+          Add chords above to keep their fingerings together in song order.
+        </p>
+      ) : (
+        <ol
+          className="chord-group-list"
+          aria-label="Selected chord progression"
+        >
+          {items.map((item, index) => {
+            const name = chordName(item, noteNames);
+            return (
+              <li
+                key={item.id}
+                className={draggedId === item.id ? "dragging" : undefined}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => drop(index)}
+              >
+                <article className="chord-group-card">
+                  <header>
+                    <span
+                      className="chord-order"
+                      aria-label={`Chord ${index + 1}`}
+                    >
+                      {index + 1}
+                    </span>
+                    <div>
+                      <h4>{name}</h4>
+                      <p>{CHORDS[item.chordId].name}</p>
+                    </div>
+                    <button
+                      type="button"
+                      className="chord-drag-handle"
+                      draggable
+                      onDragStart={(event) => {
+                        event.dataTransfer.effectAllowed = "move";
+                        event.dataTransfer.setData(
+                          "text/plain",
+                          String(item.id),
+                        );
+                        setDraggedId(item.id);
+                      }}
+                      onDragEnd={() => setDraggedId(null)}
+                      onKeyDown={(event) => {
+                        if (event.key === "ArrowLeft" && index > 0) {
+                          event.preventDefault();
+                          move(index, index - 1, name);
+                        }
+                        if (
+                          event.key === "ArrowRight" &&
+                          index < items.length - 1
+                        ) {
+                          event.preventDefault();
+                          move(index, index + 1, name);
+                        }
+                      }}
+                      aria-label={`Reorder ${name} at position ${index + 1}. Use left and right arrow keys.`}
+                      title="Drag to reorder"
+                    >
+                      <span aria-hidden="true">⠿</span>
+                    </button>
+                    <div className="chord-card-actions">
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => move(index, index - 1, name)}
+                        aria-label={`Move ${name} earlier`}
+                      >
+                        ←
+                      </button>
+                      <button
+                        type="button"
+                        disabled={index === items.length - 1}
+                        onClick={() => move(index, index + 1, name)}
+                        aria-label={`Move ${name} later`}
+                      >
+                        →
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onView(item)}
+                        aria-label={`View ${name}`}
+                      >
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onItemsChange(
+                            items.filter(
+                              (candidate) => candidate.id !== item.id,
+                            ),
+                          )
+                        }
+                        aria-label={`Remove ${name} at position ${index + 1}`}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </header>
+                  <CompactChordDiagram
+                    root={item.root}
+                    chordId={item.chordId}
+                    noteNames={noteNames}
+                  />
+                </article>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </section>
+  );
+}
+
+function chordName(item: ChordGroupItem, noteNames: readonly string[]) {
+  return `${noteNames[item.root]}${CHORDS[item.chordId].symbol}`;
+}

@@ -74,19 +74,15 @@ export function getPreferredVoicing(
   );
 }
 
-export function getVoicingFrets(root: number, chordId: ChordId) {
-  return getPreferredVoicing(root, chordId).strings.map(
-    (string) => string.fret,
-  );
-}
-
-export function getVoicingPitchClasses(root: number, chordId: ChordId) {
-  return getVoicingFrets(root, chordId).map((fret, index) =>
-    fret === null
+export function getVoicingPitchClasses(
+  root: number,
+  chordId: ChordId,
+  voicing = getPreferredVoicing(root, chordId),
+) {
+  const lowToHighTuning = [...STANDARD_TUNING].reverse();
+  return voicing.strings.map((string, index) =>
+    string.fret === null
       ? null
-      : getFrettedPitchClass(
-          [...STANDARD_TUNING].reverse()[index].pitchClass,
-          fret,
-        ),
+      : getFrettedPitchClass(lowToHighTuning[index].pitchClass, string.fret),
   );
 }
