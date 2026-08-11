@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { moveItem } from "@/lib/array-order";
 import { CHORDS } from "@/lib/chord-data";
 import type { ChordGroupItem } from "@/lib/chord-group-state";
+import { compareChordVoicings } from "@/lib/voice-leading";
 import { CompactChordDiagram } from "./compact-chord-diagram";
 
 export type { ChordGroupItem } from "@/lib/chord-group-state";
@@ -30,6 +31,14 @@ export function ChordGroup({
   const [dropTargetId, setDropTargetId] = useState<number | null>(null);
   const [settledId, setSettledId] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState("");
+  const [showVoiceLeading, setShowVoiceLeading] = useState(false);
+  const transitions = useMemo(
+    () =>
+      items.map((item, index) =>
+        index === 0 ? null : compareChordVoicings(items[index - 1], item),
+      ),
+    [items],
+  );
 
   function move(fromIndex: number, toIndex: number, chordName: string) {
     onItemsChange(moveItem(items, fromIndex, toIndex));
@@ -58,6 +67,16 @@ export function ChordGroup({
         </div>
         {items.length > 0 && (
           <div className="chord-group-heading-actions">
+            {items.length > 1 && (
+              <button
+                type="button"
+                className="voice-leading-toggle"
+                aria-pressed={showVoiceLeading}
+                onClick={() => setShowVoiceLeading((current) => !current)}
+              >
+                Voice leading
+              </button>
+            )}
             <button
               type="button"
               className="share-chord-group"
@@ -81,6 +100,16 @@ export function ChordGroup({
           use the left or right arrow key.
         </p>
       )}
+      {items.length > 1 && showVoiceLeading && (
+        <div className="voice-leading-legend" aria-label="Voice-leading legend">
+          <span>
+            <b aria-hidden="true">=</b> Held pitch
+          </span>
+          <span>
+            <b aria-hidden="true">â†•</b> Smallest move
+          </span>
+        </div>
+      )}
       {items.length === 0 ? (
         <p className="empty-chord-group">
           Add chords above to keep their fingerings together in song order.
@@ -92,6 +121,12 @@ export function ChordGroup({
         >
           {items.map((item, index) => {
             const name = chordName(item, noteNames);
+            const transition = transitions[index];
+            const previousName =
+              index > 0 ? chordName(items[index - 1], noteNames) : "";
+            const transitionLabel = transition
+              ? `${previousName} to ${name}: ${transition.heldCount} held ${transition.heldCount === 1 ? "pitch" : "pitches"}${transition.smallestMove === null ? "" : `, smallest move ${transition.smallestMove} ${transition.smallestMove === 1 ? "semitone" : "semitones"}`}`
+              : undefined;
             return (
               <li
                 key={item.id}
@@ -202,11 +237,28 @@ export function ChordGroup({
                       </button>
                     </div>
                   </header>
+                  {showVoiceLeading && transition && (
+                    <p className="voice-leading-summary">
+                      <strong>
+                        {previousName} â†’ {name}
+                      </strong>
+                      <span>
+                        {transition.heldCount} held Â·{" "}
+                        {transition.smallestMove ?? 0} semitone minimum
+                      </span>
+                    </p>
+                  )}
                   <CompactChordDiagram
                     root={item.root}
                     chordId={item.chordId}
                     voicingKey={item.voicingKey}
                     noteNames={noteNames}
+                    movements={
+                      showVoiceLeading ? transition?.movements : undefined
+                    }
+                    transitionLabel={
+                      showVoiceLeading ? transitionLabel : undefined
+                    }
                   />
                 </article>
               </li>

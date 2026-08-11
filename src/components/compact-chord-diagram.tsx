@@ -2,12 +2,15 @@ import { memo, type CSSProperties } from "react";
 
 import type { ChordId } from "@/lib/chord-data";
 import { createChordDiagramModel } from "@/lib/chord-diagram";
+import type { VoiceMovement } from "@/lib/voice-leading";
 
 type Props = {
   root: number;
   chordId: ChordId;
   voicingKey?: string;
   noteNames: readonly string[];
+  movements?: readonly (VoiceMovement | null)[];
+  transitionLabel?: string;
 };
 
 function CompactChordDiagramView({
@@ -15,6 +18,8 @@ function CompactChordDiagramView({
   chordId,
   voicingKey,
   noteNames,
+  movements,
+  transitionLabel,
 }: Props) {
   const model = createChordDiagramModel(root, chordId, voicingKey);
   return (
@@ -22,7 +27,7 @@ function CompactChordDiagramView({
       className="compact-neck"
       style={{ "--compact-frets": model.frets.length } as CSSProperties}
       role="img"
-      aria-label={`${noteNames[root]}${model.chord.symbol}, ${model.voicing.name}, fingering ${model.voicing.strings.map((string) => string.fret ?? "x").join(" ")}`}
+      aria-label={`${noteNames[root]}${model.chord.symbol}, ${model.voicing.name}, fingering ${model.voicing.strings.map((string) => string.fret ?? "x").join(" ")}${transitionLabel ? `. ${transitionLabel}` : ""}`}
     >
       <div className="compact-corner" aria-hidden="true" />
       {model.frets.map((fret) => (
@@ -30,7 +35,7 @@ function CompactChordDiagramView({
           {fret}
         </span>
       ))}
-      {model.strings.map((entry) => (
+      {model.strings.map((entry, stringIndex) => (
         <div className="compact-string" key={entry.stringNumber}>
           <span className="compact-string-status" aria-hidden="true">
             {entry.fret === null
@@ -47,7 +52,19 @@ function CompactChordDiagramView({
             >
               <i style={{ height: `${1 + entry.string.gauge * 0.35}px` }} />
               {entry.fret === fret && entry.pitchClass !== null && (
-                <b className={entry.isRoot ? "root" : undefined}>
+                <b
+                  className={[
+                    entry.isRoot ? "root" : "",
+                    movements?.[stringIndex]?.status === "held"
+                      ? "voice-held"
+                      : "",
+                    movements?.[stringIndex]?.status === "closest"
+                      ? "voice-closest"
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
                   {fret === 0 ? "○" : entry.finger}
                 </b>
               )}

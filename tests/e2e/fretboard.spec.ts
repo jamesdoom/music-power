@@ -399,6 +399,38 @@ test("cycles alternate chord voicings and saves the selected shape", async ({
   ).toBeVisible();
 });
 
+test("compares consecutive chord voicings and exposes movement cues", async ({
+  page,
+}) => {
+  await page.goto("/?tool=chords&chords=0.major,7.major,9.minor");
+  const progression = page.getByLabel("Selected chord progression");
+  await expect(progression.getByRole("listitem")).toHaveCount(3);
+
+  const toggle = page.getByRole("button", { name: "Voice leading" });
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Voice-leading legend")).toBeVisible();
+  await expect(progression.locator(".voice-leading-summary")).toHaveCount(2);
+  await expect(
+    progression.locator(".voice-leading-summary").first(),
+  ).toContainText(/C.*G/);
+  await expect(
+    progression.locator(".compact-fret b.voice-held").first(),
+  ).toBeVisible();
+  await expect(
+    progression.locator(".compact-fret b.voice-closest").first(),
+  ).toBeVisible();
+  await expect(progression.locator(".compact-neck").nth(1)).toHaveAttribute(
+    "aria-label",
+    /C to G: .*held.*smallest move/,
+  );
+
+  await progression.getByRole("button", { name: "Move Am earlier" }).click();
+  await expect(
+    progression.locator(".voice-leading-summary").first(),
+  ).toContainText(/C.*Am/);
+});
+
 test("builds an ordered chord group with compact playable fingerings", async ({
   page,
 }, testInfo) => {
