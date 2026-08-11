@@ -738,6 +738,12 @@ input:focus-visible + span,
   font-size: clamp(1.35rem, 3vw, 1.8rem);
 }
 
+.chord-reorder-help {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
 .clear-chord-group,
 .chord-card-actions button {
   min-height: 2.25rem;

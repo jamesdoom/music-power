@@ -1,11 +1,11 @@
-import type { CSSProperties } from "react";
+import { memo, type CSSProperties } from "react";
 
 import type { ChordId } from "@/lib/chord-data";
 import { createChordDiagramModel } from "@/lib/chord-diagram";
 
 type Props = { root: number; chordId: ChordId; noteNames: readonly string[] };
 
-export function CompactChordDiagram({ root, chordId, noteNames }: Props) {
+function CompactChordDiagramView({ root, chordId, noteNames }: Props) {
   const model = createChordDiagramModel(root, chordId);
   return (
     <div
@@ -56,3 +56,5 @@ export function CompactChordDiagram({ root, chordId, noteNames }: Props) {
     </div>
   );
 }
+
+export const CompactChordDiagram = memo(CompactChordDiagramView);

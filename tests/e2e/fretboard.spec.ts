@@ -37,6 +37,13 @@ async function markerColors(page: Page, selector: string) {
     });
 }
 
+async function openChordExplorer(page: Page) {
+  await page.getByRole("button", { name: "Chord explorer" }).click();
+  await expect(
+    page.getByRole("heading", { name: "C", exact: true }),
+  ).toBeVisible();
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto(
     "/?root=D&scale=blues&labels=notes&accidentals=flats&handedness=right&strings=high-to-low",
@@ -252,6 +259,17 @@ test("reduced-motion preference disables marker and scroll-cue transitions", asy
         (viewport) => getComputedStyle(viewport, "::after").transitionDuration,
       ),
   ).toBe("0s");
+
+  await openChordExplorer(page);
+  await page.getByRole("button", { name: "Add C to group" }).click();
+  await expect(page.locator(".chord-group-card")).toHaveCSS(
+    "animation-name",
+    "none",
+  );
+  await expect(page.locator(".chord-group-card")).toHaveCSS(
+    "transition-duration",
+    "0s",
+  );
 });
 
 test("left-handed URL state reverses fret order without losing containment", async ({
@@ -295,11 +313,7 @@ test("core interactions do not produce browser errors", async ({ page }) => {
 test("chord explorer renders and updates a horizontal six-string voicing", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Chord explorer" }).click();
-
-  await expect(
-    page.getByRole("heading", { name: "C", exact: true }),
-  ).toBeVisible();
+  await openChordExplorer(page);
   await expect(page.getByLabel("Chord notes")).toContainText("C");
   await expect(page.getByLabel("Chord notes")).toContainText("E");
   await expect(page.getByLabel("Chord notes")).toContainText("G");
@@ -337,7 +351,7 @@ test("chord explorer renders and updates a horizontal six-string voicing", async
 test("chord diagram and mode controls are keyboard accessible", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Chord explorer" }).click();
+  await openChordExplorer(page);
   const diagram = page.getByLabel(/chord diagram/);
   await expect(diagram).toBeVisible();
   await diagram.focus();
@@ -350,7 +364,7 @@ test("chord diagram and mode controls are keyboard accessible", async ({
 test("builds an ordered chord group with compact playable fingerings", async ({
   page,
 }, testInfo) => {
-  await page.getByRole("button", { name: "Chord explorer" }).click();
+  await openChordExplorer(page);
   await expect(page.getByText(/Add chords above/)).toBeVisible();
 
   await page.getByRole("button", { name: "Add C to group" }).click();
@@ -364,6 +378,24 @@ test("builds an ordered chord group with compact playable fingerings", async ({
   await expect(progression.locator(".compact-neck")).toHaveCount(3);
   await expect(progression.getByRole("heading", { name: "C" })).toBeVisible();
   await expect(progression.getByRole("heading", { name: "G7" })).toHaveCount(2);
+  await expect(page.locator("#chord-reorder-instructions")).toBeVisible();
+
+  const firstCard = progression.getByRole("listitem").first();
+  const firstHeader = firstCard.locator("header");
+  await expect(firstCard).toHaveAttribute("aria-posinset", "1");
+  await expect(firstCard).toHaveAttribute("aria-setsize", "3");
+  await expect(firstHeader).toHaveAttribute(
+    "aria-describedby",
+    "chord-reorder-instructions",
+  );
+  await expect(firstHeader).toHaveAttribute(
+    "aria-keyshortcuts",
+    "ArrowLeft ArrowRight",
+  );
+  await page.getByRole("button", { name: "Clear group" }).focus();
+  await page.keyboard.press("Tab");
+  await expect(firstHeader).toBeFocused();
+  await expect(firstHeader).toHaveCSS("outline-style", "solid");
 
   const viewportWidth = page.viewportSize()?.width ?? 0;
   for (const card of await progression.locator(".chord-group-card").all()) {
@@ -374,6 +406,12 @@ test("builds an ordered chord group with compact playable fingerings", async ({
   }
 
   if (testInfo.project.name === "mobile") {
+    const actionHeights = await progression
+      .locator(".chord-card-actions button")
+      .evaluateAll((buttons) =>
+        buttons.map((button) => button.getBoundingClientRect().height),
+      );
+    expect(actionHeights.every((height) => height >= 44)).toBe(true);
     await progression.getByRole("button", { name: "Move C later" }).click();
     await progression.getByRole("button", { name: "Move C later" }).click();
   } else {
@@ -401,4 +439,27 @@ test("builds an ordered chord group with compact playable fingerings", async ({
   await page.getByRole("button", { name: "Clear group" }).click();
   await expect(progression).not.toBeVisible();
   await expect(page.getByText(/Add chords above/)).toBeVisible();
+});
+
+test("chord workspace interactions do not produce browser errors", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+
+  await openChordExplorer(page);
+  await page.getByRole("button", { name: "Add C to group" }).click();
+  await page.getByLabel("Root note").selectOption("7");
+  await page.getByRole("button", { name: "Add G to group" }).click();
+
+  const progression = page.getByLabel("Selected chord progression");
+  await progression.getByLabel(/Drag G at position 2/).press("ArrowLeft");
+  await progression
+    .getByRole("button", { name: "Remove C at position 2" })
+    .click();
+
+  expect(errors).toEqual([]);
 });

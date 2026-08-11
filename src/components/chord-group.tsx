@@ -56,6 +56,12 @@ export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
           </button>
         )}
       </div>
+      {items.length > 0 && (
+        <p className="chord-reorder-help" id="chord-reorder-instructions">
+          Drag a card header to reorder. Keyboard users can focus a header and
+          use the left or right arrow key.
+        </p>
+      )}
       {items.length === 0 ? (
         <p className="empty-chord-group">
           Add chords above to keep their fingerings together in song order.
@@ -70,6 +76,8 @@ export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
             return (
               <li
                 key={item.id}
+                aria-posinset={index + 1}
+                aria-setsize={items.length}
                 className={[
                   draggedId === item.id ? "dragging" : "",
                   dropTargetId === item.id ? "drop-target" : "",
@@ -92,6 +100,8 @@ export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
                   <header
                     draggable
                     tabIndex={0}
+                    aria-describedby="chord-reorder-instructions"
+                    aria-keyshortcuts="ArrowLeft ArrowRight"
                     aria-label={`Drag ${name} at position ${index + 1} to reorder. Use left and right arrow keys.`}
                     title="Drag card to reorder"
                     onDragStart={(event) => {
