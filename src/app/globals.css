@@ -754,14 +754,44 @@ input:focus-visible + span,
   box-shadow: 0 0.5rem 1.25rem rgba(1, 22, 39, 0.08);
 }
 
+.chord-group-list > li.dragging {
+  opacity: 0.45;
+}
+
 .chord-group-card header {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   gap: 0.65rem;
   align-items: center;
   padding: 0.75rem;
   color: var(--paper);
   background: var(--ink);
+}
+
+.chord-drag-handle {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid rgba(253, 255, 252, 0.3);
+  border-radius: 0.4rem;
+  color: var(--paper);
+  background: rgba(253, 255, 252, 0.08);
+  cursor: grab;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.chord-drag-handle:active {
+  cursor: grabbing;
+}
+
+.chord-drag-handle:hover,
+.chord-drag-handle:focus-visible {
+  color: var(--ink);
+  background: var(--focus);
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .chord-order {
@@ -801,6 +831,11 @@ input:focus-visible + span,
   border-color: rgba(253, 255, 252, 0.3);
   color: var(--paper);
   background: rgba(253, 255, 252, 0.08);
+}
+
+.chord-card-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
 }
 
 .compact-neck {
@@ -1311,7 +1346,7 @@ input:focus-visible + span,
     width: 100%;
   }
   .chord-group-card header {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
   .chord-card-actions {
     grid-column: 1 / -1;

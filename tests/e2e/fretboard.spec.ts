@@ -365,6 +365,17 @@ test("builds an ordered chord group with compact playable fingerings", async ({
   await expect(progression.getByRole("heading", { name: "C" })).toBeVisible();
   await expect(progression.getByRole("heading", { name: "G7" })).toHaveCount(2);
 
+  await progression
+    .getByRole("button", { name: "Move G7 earlier" })
+    .first()
+    .click();
+  await expect(progression.getByRole("heading")).toHaveText(["G7", "C", "G7"]);
+
+  await progression
+    .getByRole("button", { name: /Reorder C at position 2/ })
+    .press("ArrowRight");
+  await expect(progression.getByRole("heading")).toHaveText(["G7", "G7", "C"]);
+
   await page.getByRole("button", { name: "View C" }).click();
   await expect(
     page.getByRole("heading", { name: "C", exact: true }).first(),

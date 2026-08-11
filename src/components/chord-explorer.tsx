@@ -3,6 +3,7 @@
 import { useRef, useState, type CSSProperties } from "react";
 
 import { CHORDS, type ChordId } from "@/lib/chord-data";
+import { moveItem } from "@/lib/array-order";
 import {
   getChordPitchClasses,
   getPreferredVoicing,
@@ -32,6 +33,8 @@ export function ChordExplorer() {
   const [accidentals, setAccidentals] =
     useState<AccidentalPreference>("sharps");
   const [chordGroup, setChordGroup] = useState<ChordGroupItem[]>([]);
+  const [draggedChordId, setDraggedChordId] = useState<number | null>(null);
+  const [reorderAnnouncement, setReorderAnnouncement] = useState("");
   const nextGroupId = useRef(1);
 
   const chord = CHORDS[chordId];
@@ -64,6 +67,23 @@ export function ChordExplorer() {
     const item = { id: nextGroupId.current, root, chordId };
     nextGroupId.current += 1;
     setChordGroup((current) => [...current, item]);
+  }
+
+  function moveChord(fromIndex: number, toIndex: number, chordName: string) {
+    setChordGroup((current) => moveItem(current, fromIndex, toIndex));
+    setReorderAnnouncement(`${chordName} moved to position ${toIndex + 1}.`);
+  }
+
+  function dropChord(targetIndex: number) {
+    if (draggedChordId === null) return;
+    const fromIndex = chordGroup.findIndex(
+      (item) => item.id === draggedChordId,
+    );
+    if (fromIndex === -1 || fromIndex === targetIndex) return;
+    const item = chordGroup[fromIndex];
+    const chordName = `${names[item.root]}${CHORDS[item.chordId].symbol}`;
+    moveChord(fromIndex, targetIndex, chordName);
+    setDraggedChordId(null);
   }
 
   return (
@@ -270,6 +290,9 @@ export function ChordExplorer() {
       </div>
 
       <section className="chord-group" aria-labelledby="chord-group-title">
+        <p className="sr-only" role="status" aria-live="polite">
+          {reorderAnnouncement}
+        </p>
         <div className="chord-group-heading">
           <div>
             <p className="summary-label">Play-along workspace</p>
@@ -298,7 +321,14 @@ export function ChordExplorer() {
               const itemChord = CHORDS[item.chordId];
               const chordName = `${names[item.root]}${itemChord.symbol}`;
               return (
-                <li key={item.id}>
+                <li
+                  key={item.id}
+                  className={
+                    draggedChordId === item.id ? "dragging" : undefined
+                  }
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={() => dropChord(index)}
+                >
                   <article className="chord-group-card">
                     <header>
                       <span
@@ -311,7 +341,54 @@ export function ChordExplorer() {
                         <h4>{chordName}</h4>
                         <p>{itemChord.name}</p>
                       </div>
+                      <button
+                        type="button"
+                        className="chord-drag-handle"
+                        draggable
+                        onDragStart={(event) => {
+                          event.dataTransfer.effectAllowed = "move";
+                          event.dataTransfer.setData(
+                            "text/plain",
+                            String(item.id),
+                          );
+                          setDraggedChordId(item.id);
+                        }}
+                        onDragEnd={() => setDraggedChordId(null)}
+                        onKeyDown={(event) => {
+                          if (event.key === "ArrowLeft" && index > 0) {
+                            event.preventDefault();
+                            moveChord(index, index - 1, chordName);
+                          }
+                          if (
+                            event.key === "ArrowRight" &&
+                            index < chordGroup.length - 1
+                          ) {
+                            event.preventDefault();
+                            moveChord(index, index + 1, chordName);
+                          }
+                        }}
+                        aria-label={`Reorder ${chordName} at position ${index + 1}. Use left and right arrow keys.`}
+                        title="Drag to reorder"
+                      >
+                        <span aria-hidden="true">⠿</span>
+                      </button>
                       <div className="chord-card-actions">
+                        <button
+                          type="button"
+                          disabled={index === 0}
+                          onClick={() => moveChord(index, index - 1, chordName)}
+                          aria-label={`Move ${chordName} earlier`}
+                        >
+                          ←
+                        </button>
+                        <button
+                          type="button"
+                          disabled={index === chordGroup.length - 1}
+                          onClick={() => moveChord(index, index + 1, chordName)}
+                          aria-label={`Move ${chordName} later`}
+                        >
+                          →
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
