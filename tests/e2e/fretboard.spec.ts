@@ -250,6 +250,9 @@ test("reduced-motion preference disables marker and scroll-cue transitions", asy
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
+  await expect(
+    page.locator('.fretboard-region[data-interactive="true"]'),
+  ).toBeVisible();
 
   await expect(page.locator(".note-marker").first()).toHaveCSS(
     "transition-duration",
@@ -362,6 +365,12 @@ test("chord diagram and mode controls are keyboard accessible", async ({
   await expect(
     page.getByRole("button", { name: "Scale explorer" }),
   ).toHaveAttribute("aria-pressed", "false");
+  await expect(
+    page.getByRole("button", { name: "Previous chord voicing" }),
+  ).toHaveText("←");
+  await expect(
+    page.getByRole("button", { name: "Next chord voicing" }),
+  ).toHaveText("→");
 });
 
 test("cycles alternate chord voicings and saves the selected shape", async ({
@@ -424,6 +433,33 @@ test("compares consecutive chord voicings and exposes movement cues", async ({
     "aria-label",
     /C to G: .*held.*smallest move/,
   );
+
+  const layout = await page.evaluate(() => {
+    const actionButtons = [
+      ...document.querySelectorAll<HTMLElement>(
+        ".chord-group-heading-actions button",
+      ),
+    ];
+    const summaries = [
+      ...document.querySelectorAll<HTMLElement>(".voice-leading-summary"),
+    ];
+    return {
+      bodyOverflow:
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth,
+      shortTouchTarget: actionButtons.some(
+        (button) => button.getBoundingClientRect().height < 44,
+      ),
+      summaryOverflow: summaries.some(
+        (summary) => summary.scrollWidth > summary.clientWidth,
+      ),
+    };
+  });
+  expect(layout.bodyOverflow).toBe(false);
+  expect(layout.summaryOverflow).toBe(false);
+  if (page.viewportSize()?.width && page.viewportSize()!.width <= 672) {
+    expect(layout.shortTouchTarget).toBe(false);
+  }
 
   await progression.getByRole("button", { name: "Move Am earlier" }).click();
   await expect(

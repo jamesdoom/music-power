@@ -778,7 +778,9 @@ input:focus-visible + span,
 
 .chord-group-heading-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .chord-reorder-help {
@@ -824,17 +826,33 @@ input:focus-visible + span,
 
 .voice-leading-legend {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
   flex-wrap: wrap;
   margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: var(--radius-sm);
   color: var(--muted);
+  background: color-mix(in srgb, var(--accent) 9%, var(--paper));
   font-size: 0.76rem;
 }
 
+.voice-leading-legend p {
+  margin: 0;
+}
+
+.voice-leading-legend > div,
 .voice-leading-legend span {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+}
+
+.voice-leading-legend > div {
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .voice-leading-legend b {
@@ -855,6 +873,7 @@ input:focus-visible + span,
   gap: 0.5rem;
   margin: 0;
   padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
   color: var(--ink);
   background: color-mix(in srgb, var(--accent) 18%, var(--paper));
   font-size: 0.68rem;
@@ -863,6 +882,10 @@ input:focus-visible + span,
 .voice-leading-summary span {
   color: var(--muted);
   text-align: right;
+}
+
+.voice-leading-summary strong {
+  white-space: nowrap;
 }
 
 .empty-chord-group {
@@ -1086,7 +1109,7 @@ input:focus-visible + span,
 }
 
 .compact-fret b.voice-closest::after {
-  content: "â†•";
+  content: "\2195";
 }
 
 .legend {
@@ -1537,6 +1560,22 @@ input:focus-visible + span,
   .chord-group-card header {
     grid-template-columns: auto minmax(0, 1fr) auto;
   }
+  .chord-group-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .chord-group-heading-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+  .voice-leading-toggle {
+    grid-column: 1 / -1;
+  }
+  .chord-group-heading-actions button {
+    width: 100%;
+    min-height: var(--control-height);
+  }
   .chord-card-actions {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -1584,6 +1623,13 @@ input:focus-visible + span,
   .footer-details {
     text-align: left;
   }
+  .voice-leading-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .voice-leading-summary span {
+    text-align: left;
+  }
 }
 
 @media (max-width: 30rem) {
@@ -1598,16 +1644,6 @@ input:focus-visible + span,
   }
   .segmented-control span {
     padding-inline: 0.6rem;
-  }
-  .chord-group-heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .chord-group-heading-actions,
-  .clear-chord-group,
-  .share-chord-group,
-  .voice-leading-toggle {
-    width: 100%;
   }
   .chord-card-actions {
     grid-template-columns: 1fr 1fr;

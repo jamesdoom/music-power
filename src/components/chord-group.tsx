@@ -102,12 +102,15 @@ export function ChordGroup({
       )}
       {items.length > 1 && showVoiceLeading && (
         <div className="voice-leading-legend" aria-label="Voice-leading legend">
-          <span>
-            <b aria-hidden="true">=</b> Held pitch
-          </span>
-          <span>
-            <b aria-hidden="true">â†•</b> Smallest move
-          </span>
+          <p>Each card compares its fingering with the chord before it.</p>
+          <div>
+            <span>
+              <b aria-hidden="true">=</b> Held pitch
+            </span>
+            <span>
+              <b aria-hidden="true">&#8597;</b> Smallest move
+            </span>
+          </div>
         </div>
       )}
       {items.length === 0 ? (
@@ -240,10 +243,10 @@ export function ChordGroup({
                   {showVoiceLeading && transition && (
                     <p className="voice-leading-summary">
                       <strong>
-                        {previousName} â†’ {name}
+                        {previousName} &rarr; {name}
                       </strong>
                       <span>
-                        {transition.heldCount} held Â·{" "}
+                        {transition.heldCount} held &middot;{" "}
                         {transition.smallestMove ?? 0} semitone minimum
                       </span>
                     </p>

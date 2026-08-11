@@ -64,7 +64,7 @@ export function ChordDiagram({
             }
             aria-label="Previous chord voicing"
           >
-            â†
+            &larr;
           </button>
           <span aria-live="polite">
             {selectedIndex + 1} of {options.length}
@@ -76,7 +76,7 @@ export function ChordDiagram({
             }
             aria-label="Next chord voicing"
           >
-            â†’
+            &rarr;
           </button>
         </div>
       </div>
