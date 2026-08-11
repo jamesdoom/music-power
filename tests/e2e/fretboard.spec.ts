@@ -463,3 +463,45 @@ test("chord workspace interactions do not produce browser errors", async ({
 
   expect(errors).toEqual([]);
 });
+
+test("persists, restores, and shares an ordered chord group", async ({
+  page,
+}) => {
+  await page.goto("/?tool=chords&chords=0.major,7.dominant7,9.minor");
+
+  await expect(
+    page.getByRole("button", { name: "Chord explorer" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  const progression = page.getByLabel("Selected chord progression");
+  await expect(progression.getByRole("heading")).toHaveText(["C", "G7", "Am"]);
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("music-power:chord-group:v1")),
+    )
+    .toBe("0.major,7.dominant7,9.minor");
+
+  await progression.getByLabel(/Drag Am at position 3/).press("ArrowLeft");
+  await expect(page).toHaveURL(/chords=0.major%2C9.minor%2C7.dominant7/);
+
+  await page.getByRole("button", { name: "Copy link" }).click();
+  await expect(page.locator(".chord-group").getByRole("status")).toContainText(
+    /Chord group link copied|Copy the current address/,
+  );
+
+  await page.reload();
+  await expect(progression.getByRole("heading")).toHaveText(["C", "Am", "G7"]);
+
+  await page.goto("/");
+  await expect(
+    page.getByRole("button", { name: "Chord explorer" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(progression.getByRole("heading")).toHaveText(["C", "Am", "G7"]);
+
+  await page.getByRole("button", { name: "Clear group" }).click();
+  await expect(page).not.toHaveURL(/chords=/);
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("music-power:chord-group:v1")),
+    )
+    .toBeNull();
+});

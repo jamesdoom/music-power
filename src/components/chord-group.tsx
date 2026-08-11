@@ -3,19 +3,29 @@
 import { useState } from "react";
 
 import { moveItem } from "@/lib/array-order";
-import { CHORDS, type ChordId } from "@/lib/chord-data";
+import { CHORDS } from "@/lib/chord-data";
+import type { ChordGroupItem } from "@/lib/chord-group-state";
 import { CompactChordDiagram } from "./compact-chord-diagram";
 
-export type ChordGroupItem = { id: number; root: number; chordId: ChordId };
+export type { ChordGroupItem } from "@/lib/chord-group-state";
 
 type Props = {
   items: ChordGroupItem[];
   noteNames: readonly string[];
   onItemsChange: (items: ChordGroupItem[]) => void;
   onView: (item: ChordGroupItem) => void;
+  onCopyLink: () => void;
+  shareStatus: string;
 };
 
-export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
+export function ChordGroup({
+  items,
+  noteNames,
+  onItemsChange,
+  onView,
+  onCopyLink,
+  shareStatus,
+}: Props) {
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [dropTargetId, setDropTargetId] = useState<number | null>(null);
   const [settledId, setSettledId] = useState<number | null>(null);
@@ -39,7 +49,7 @@ export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
   return (
     <section className="chord-group" aria-labelledby="chord-group-title">
       <p className="sr-only" role="status" aria-live="polite">
-        {announcement}
+        {shareStatus || announcement}
       </p>
       <div className="chord-group-heading">
         <div>
@@ -47,13 +57,22 @@ export function ChordGroup({ items, noteNames, onItemsChange, onView }: Props) {
           <h3 id="chord-group-title">Your chord group</h3>
         </div>
         {items.length > 0 && (
-          <button
-            type="button"
-            className="clear-chord-group"
-            onClick={() => onItemsChange([])}
-          >
-            Clear group
-          </button>
+          <div className="chord-group-heading-actions">
+            <button
+              type="button"
+              className="share-chord-group"
+              onClick={onCopyLink}
+            >
+              Copy link
+            </button>
+            <button
+              type="button"
+              className="clear-chord-group"
+              onClick={() => onItemsChange([])}
+            >
+              Clear group
+            </button>
+          </div>
         )}
       </div>
       {items.length > 0 && (

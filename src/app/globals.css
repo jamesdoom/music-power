@@ -738,6 +738,11 @@ input:focus-visible + span,
   font-size: clamp(1.35rem, 3vw, 1.8rem);
 }
 
+.chord-group-heading-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .chord-reorder-help {
   margin: 0.45rem 0 0;
   color: var(--muted);
@@ -745,6 +750,7 @@ input:focus-visible + span,
 }
 
 .clear-chord-group,
+.share-chord-group,
 .chord-card-actions button {
   min-height: 2.25rem;
   padding: 0 0.7rem;
@@ -759,6 +765,8 @@ input:focus-visible + span,
 
 .clear-chord-group:hover,
 .clear-chord-group:focus-visible,
+.share-chord-group:hover,
+.share-chord-group:focus-visible,
 .chord-card-actions button:hover,
 .chord-card-actions button:focus-visible {
   border-color: var(--ink);
@@ -1473,7 +1481,9 @@ input:focus-visible + span,
     align-items: flex-start;
     flex-direction: column;
   }
-  .clear-chord-group {
+  .chord-group-heading-actions,
+  .clear-chord-group,
+  .share-chord-group {
     width: 100%;
   }
   .chord-card-actions {

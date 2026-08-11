@@ -1,8 +1,20 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import type { ChordId } from "@/lib/chord-data";
+import {
+  assignChordGroupIds,
+  CHORD_GROUP_STORAGE_KEY,
+  chordGroupValueFromSnapshot,
+  getChordGroupSnapshot,
+  getServerChordGroupSnapshot,
+  parseChordGroup,
+  SERVER_CHORD_GROUP_SNAPSHOT,
+  serializeChordGroup,
+  subscribeToChordGroupSnapshot,
+  type ChordGroupItem,
+} from "@/lib/chord-group-state";
 import {
   CHROMATIC_FLATS,
   CHROMATIC_SHARPS,
@@ -10,7 +22,7 @@ import {
 } from "@/lib/music-data";
 import type { MarkerLabel } from "@/lib/selection-state";
 import { ChordDiagram } from "./chord-diagram";
-import { ChordGroup, type ChordGroupItem } from "./chord-group";
+import { ChordGroup } from "./chord-group";
 import { ChordSummary } from "./chord-summary";
 import { ChordToolbar } from "./chord-toolbar";
 
@@ -20,22 +32,73 @@ export function ChordExplorer() {
   const [labels, setLabels] = useState<MarkerLabel>("notes");
   const [accidentals, setAccidentals] =
     useState<AccidentalPreference>("sharps");
-  const [chordGroup, setChordGroup] = useState<ChordGroupItem[]>([]);
-  const nextGroupId = useRef(1);
+  const savedGroupSnapshot = useSyncExternalStore(
+    subscribeToChordGroupSnapshot,
+    getChordGroupSnapshot,
+    getServerChordGroupSnapshot,
+  );
+  const restoredGroup = useMemo(
+    () =>
+      assignChordGroupIds(
+        parseChordGroup(chordGroupValueFromSnapshot(savedGroupSnapshot)),
+      ),
+    [savedGroupSnapshot],
+  );
+  const [editedGroup, setEditedGroup] = useState<ChordGroupItem[] | null>(null);
+  const [shareStatus, setShareStatus] = useState("");
+  const chordGroup = editedGroup ?? restoredGroup;
   const noteNames =
     accidentals === "flats" ? CHROMATIC_FLATS : CHROMATIC_SHARPS;
 
+  useEffect(() => {
+    if (savedGroupSnapshot === SERVER_CHORD_GROUP_SNAPSHOT) return;
+
+    const value = serializeChordGroup(chordGroup);
+    const url = new URL(window.location.href);
+    if (value) {
+      url.searchParams.set("chords", value);
+      url.searchParams.set("tool", "chords");
+    } else {
+      url.searchParams.delete("chords");
+    }
+    window.history.replaceState(null, "", url);
+
+    try {
+      if (value) {
+        window.localStorage.setItem(CHORD_GROUP_STORAGE_KEY, value);
+      } else {
+        window.localStorage.removeItem(CHORD_GROUP_STORAGE_KEY);
+      }
+    } catch {
+      // The URL remains a durable fallback when storage is unavailable.
+    }
+  }, [chordGroup, savedGroupSnapshot]);
+
   function addCurrentChord() {
-    setChordGroup((current) => [
-      ...current,
-      { id: nextGroupId.current, root, chordId },
-    ]);
-    nextGroupId.current += 1;
+    const nextId = chordGroup.reduce(
+      (highest, item) => Math.max(highest, item.id + 1),
+      1,
+    );
+    setEditedGroup([...chordGroup, { id: nextId, root, chordId }]);
   }
 
   function viewChord(item: ChordGroupItem) {
     setRoot(item.root);
     setChordId(item.chordId);
+  }
+
+  async function copyShareLink() {
+    const url = new URL(window.location.href);
+    url.searchParams.set("chords", serializeChordGroup(chordGroup));
+    url.searchParams.set("tool", "chords");
+    window.history.replaceState(null, "", url);
+
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      setShareStatus("Chord group link copied.");
+    } catch {
+      setShareStatus("Could not copy automatically. Copy the current address.");
+    }
   }
 
   return (
@@ -69,8 +132,10 @@ export function ChordExplorer() {
       <ChordGroup
         items={chordGroup}
         noteNames={noteNames}
-        onItemsChange={setChordGroup}
+        onItemsChange={setEditedGroup}
         onView={viewChord}
+        onCopyLink={copyShareLink}
+        shareStatus={shareStatus}
       />
     </section>
   );
