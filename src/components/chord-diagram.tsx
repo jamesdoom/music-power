@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 
 import type { ChordId } from "@/lib/chord-data";
 import { createChordDiagramModel } from "@/lib/chord-diagram";
+import { getChordVoicingOptions } from "@/lib/chord-theory";
 import type { MarkerLabel } from "@/lib/selection-state";
 
 type ChordDiagramProps = {
@@ -9,6 +10,8 @@ type ChordDiagramProps = {
   chordId: ChordId;
   labels: MarkerLabel;
   noteNames: readonly string[];
+  voicingKey?: string;
+  onVoicingChange: (key: string) => void;
 };
 
 export function ChordDiagram({
@@ -16,25 +19,66 @@ export function ChordDiagram({
   chordId,
   labels,
   noteNames,
+  voicingKey,
+  onVoicingChange,
 }: ChordDiagramProps) {
-  const model = createChordDiagramModel(root, chordId);
+  const options = getChordVoicingOptions(root, chordId);
+  const selectedIndex = Math.max(
+    0,
+    options.findIndex((option) => option.key === voicingKey),
+  );
+  const model = createChordDiagramModel(
+    root,
+    chordId,
+    options[selectedIndex].key,
+  );
   const chordName = `${noteNames[root]}${model.chord.symbol}`;
   return (
     <div className="chord-diagram-region">
       <div className="mini-neck-heading">
         <div>
-          <p className="summary-label">Preferred voicing</p>
+          <p className="summary-label">
+            {selectedIndex === 0 ? "Preferred voicing" : model.option.category}
+          </p>
           <h3>{model.voicing.name}</h3>
+          <p className="voicing-position">
+            {model.voicing.kind === "open" ? (
+              "Open position"
+            ) : model.voicing.kind === "inversion" ? (
+              "Upper-string voicing"
+            ) : (
+              <>
+                Root at fret <strong>{model.rootFret}</strong>
+              </>
+            )}
+          </p>
         </div>
-        <p>
-          {model.voicing.kind === "open" ? (
-            "Open position"
-          ) : (
-            <>
-              Root at fret <strong>{model.rootFret}</strong>
-            </>
-          )}
-        </p>
+        <div className="voicing-controls" aria-label="Chord voicing">
+          <button
+            type="button"
+            onClick={() =>
+              onVoicingChange(
+                options[(selectedIndex - 1 + options.length) % options.length]
+                  .key,
+              )
+            }
+            aria-label="Previous chord voicing"
+          >
+            â†
+          </button>
+          <span aria-live="polite">
+            {selectedIndex + 1} of {options.length}
+          </span>
+          <button
+            type="button"
+            onClick={() =>
+              onVoicingChange(options[(selectedIndex + 1) % options.length].key)
+            }
+            aria-label="Next chord voicing"
+          >
+            â†’
+          </button>
+        </div>
       </div>
       <div
         className="mini-neck-scroll"

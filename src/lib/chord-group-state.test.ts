@@ -19,6 +19,17 @@ test("chord groups round-trip in song order", () => {
   assert.deepEqual(parseChordGroup(serializeChordGroup(group)), group);
 });
 
+test("alternate voicings remain backward compatible in shared groups", () => {
+  assert.deepEqual(parseChordGroup("11.major.low-a,0.major.inversion-1"), [
+    { root: 11, chordId: "major", voicingKey: "low-a" },
+    { root: 0, chordId: "major", voicingKey: "inversion-1" },
+  ]);
+  assert.equal(
+    serializeChordGroup([{ root: 11, chordId: "major", voicingKey: "low-a" }]),
+    "11.major.low-a",
+  );
+});
+
 test("invalid shared chord entries are ignored safely", () => {
   assert.deepEqual(
     parseChordGroup("0.major,12.minor,nope.major,7.unknown,4.minor.extra"),

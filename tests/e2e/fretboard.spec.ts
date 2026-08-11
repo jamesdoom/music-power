@@ -116,6 +116,9 @@ test("groups the complete scale catalog and updates shareable state", async ({
     "Harmonic scales",
   ]);
   expect(catalog.options).toBe(30);
+  await expect(scaleSelect.locator('option[value="naturalMinor"]')).toHaveText(
+    "Aeolian (Natural minor)",
+  );
 
   await scaleSelect.selectOption("altered");
   await expect(
@@ -359,6 +362,41 @@ test("chord diagram and mode controls are keyboard accessible", async ({
   await expect(
     page.getByRole("button", { name: "Scale explorer" }),
   ).toHaveAttribute("aria-pressed", "false");
+});
+
+test("cycles alternate chord voicings and saves the selected shape", async ({
+  page,
+}) => {
+  await openChordExplorer(page);
+  await expect(page.getByText("1 of 5", { exact: true })).toBeVisible();
+
+  const nextVoicing = page.getByRole("button", {
+    name: "Next chord voicing",
+  });
+  await nextVoicing.click();
+  await expect(
+    page.getByRole("heading", { name: "Low-A root shape" }),
+  ).toBeVisible();
+  await nextVoicing.click();
+  await nextVoicing.click();
+  await expect(
+    page.getByRole("heading", { name: "First inversion" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Upper-string voicing", { exact: true }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Add C to group" }).click();
+  await expect(page).toHaveURL(/0.major.inversion-1/);
+  await expect(
+    page.getByLabel("Selected chord progression").locator(".compact-neck"),
+  ).toHaveCount(1);
+
+  await page.reload();
+  await page.getByRole("button", { name: "View C" }).click();
+  await expect(
+    page.getByRole("heading", { name: "First inversion" }),
+  ).toBeVisible();
 });
 
 test("builds an ordered chord group with compact playable fingerings", async ({

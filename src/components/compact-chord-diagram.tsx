@@ -3,10 +3,20 @@ import { memo, type CSSProperties } from "react";
 import type { ChordId } from "@/lib/chord-data";
 import { createChordDiagramModel } from "@/lib/chord-diagram";
 
-type Props = { root: number; chordId: ChordId; noteNames: readonly string[] };
+type Props = {
+  root: number;
+  chordId: ChordId;
+  voicingKey?: string;
+  noteNames: readonly string[];
+};
 
-function CompactChordDiagramView({ root, chordId, noteNames }: Props) {
-  const model = createChordDiagramModel(root, chordId);
+function CompactChordDiagramView({
+  root,
+  chordId,
+  voicingKey,
+  noteNames,
+}: Props) {
+  const model = createChordDiagramModel(root, chordId, voicingKey);
   return (
     <div
       className="compact-neck"

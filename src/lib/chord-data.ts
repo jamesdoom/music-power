@@ -74,7 +74,7 @@ export type ChordVoicing = {
 };
 
 export type PreferredChordVoicing = {
-  kind: "open" | "movable";
+  kind: "open" | "barre" | "movable" | "inversion";
   name: string;
   rootFret?: number;
   strings: readonly { fret: number | null; finger: 1 | 2 | 3 | 4 | null }[];

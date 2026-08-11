@@ -87,7 +87,7 @@ export const SCALES = {
     degrees: ["1", "2", "3", "4", "5", "6", "♭7"],
   },
   naturalMinor: {
-    name: "Natural minor",
+    name: "Aeolian (Natural minor)",
     slug: "natural-minor",
     group: "majorModes",
     intervals: [0, 2, 3, 5, 7, 8, 10],

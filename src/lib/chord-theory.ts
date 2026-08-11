@@ -29,7 +29,7 @@ function transposeVoicing(
   voicing: (typeof LOW_E_VOICINGS)[ChordId],
 ): PreferredChordVoicing {
   return {
-    kind: "movable",
+    kind: voicing.barre ? "barre" : "movable",
     name,
     rootFret,
     strings: voicing.strings.map((string) => ({
@@ -44,6 +44,128 @@ function transposeVoicing(
         }
       : undefined,
   };
+}
+
+export type ChordVoicingOption = {
+  key: string;
+  category: "Open" | "Barre" | "Movable" | "Inversion";
+  voicing: PreferredChordVoicing;
+};
+
+function movableVoicingOptions(
+  root: number,
+  chordId: ChordId,
+): ChordVoicingOption[] {
+  const shapes = [
+    {
+      key: "low-a",
+      name: "Low-A root shape",
+      rootFret: getLowARootFret(root),
+      source: LOW_A_VOICINGS[chordId],
+    },
+    {
+      key: "low-e",
+      name: "Low-E root shape",
+      rootFret: getLowERootFret(root),
+      source: LOW_E_VOICINGS[chordId],
+    },
+  ];
+
+  return shapes
+    .sort((first, second) => first.rootFret - second.rootFret)
+    .map(({ key, name, rootFret, source }) => {
+      const voicing = transposeVoicing(rootFret, name, source);
+      return {
+        key,
+        category: voicing.kind === "barre" ? "Barre" : "Movable",
+        voicing,
+      };
+    });
+}
+
+const LOW_TO_HIGH_OPEN_MIDI = [40, 45, 50, 55, 59, 64] as const;
+
+function inversionVoicing(
+  root: number,
+  chordId: ChordId,
+  inversionIndex: number,
+): PreferredChordVoicing {
+  const chord = CHORDS[chordId];
+  const rotatedIntervals = Array.from({ length: 4 }, (_, voiceIndex) => {
+    const position = inversionIndex + voiceIndex;
+    const interval = chord.intervals[position % chord.intervals.length];
+    return interval + 12 * Math.floor(position / chord.intervals.length);
+  });
+  let previousPitch = Number.NEGATIVE_INFINITY;
+  const frets = LOW_TO_HIGH_OPEN_MIDI.slice(2).map((openPitch, index) => {
+    const targetClass = normalizePitchClass(root + rotatedIntervals[index]);
+    let pitch = openPitch + normalizePitchClass(targetClass - openPitch);
+    while (pitch <= previousPitch) pitch += 12;
+    previousPitch = pitch;
+    return pitch - openPitch;
+  });
+  const distinctFrets = [...new Set(frets.filter((fret) => fret > 0))].sort(
+    (first, second) => first - second,
+  );
+  const fingers = frets.map((fret) =>
+    fret === 0
+      ? null
+      : ((Math.min(distinctFrets.indexOf(fret) + 1, 4) || 1) as 1 | 2 | 3 | 4),
+  );
+  const ordinal = [
+    "Root position",
+    "First inversion",
+    "Second inversion",
+    "Third inversion",
+  ];
+
+  return {
+    kind: "inversion",
+    name: ordinal[inversionIndex] ?? `Inversion ${inversionIndex}`,
+    strings: [
+      { fret: null, finger: null },
+      { fret: null, finger: null },
+      ...frets.map((fret, index) => ({ fret, finger: fingers[index] })),
+    ],
+  };
+}
+
+export function getChordVoicingOptions(
+  root: number,
+  chordId: ChordId,
+): ChordVoicingOption[] {
+  const openVoicing = getOpenVoicing(root, chordId);
+  const movable = movableVoicingOptions(root, chordId);
+  const inversions = CHORDS[chordId].intervals.slice(1).map((_, index) => ({
+    key: `inversion-${index + 1}`,
+    category: "Inversion" as const,
+    voicing: inversionVoicing(root, chordId, index + 1),
+  }));
+  const options = [
+    ...(openVoicing
+      ? [{ key: "open", category: "Open" as const, voicing: openVoicing }]
+      : []),
+    ...movable,
+    ...inversions,
+  ];
+  const preferred = getPreferredVoicing(root, chordId);
+  const preferredIndex = options.findIndex(
+    (option) =>
+      option.voicing.name === preferred.name &&
+      option.voicing.rootFret === preferred.rootFret,
+  );
+  return preferredIndex <= 0
+    ? options
+    : [options[preferredIndex], ...options.toSpliced(preferredIndex, 1)];
+}
+
+export function getChordVoicingOption(
+  root: number,
+  chordId: ChordId,
+  key?: string,
+): ChordVoicingOption {
+  const options = getChordVoicingOptions(root, chordId);
+  return options.find((option) => option.key === key) ?? options[0];
 }
 
 function getLowestMovableVoicing(

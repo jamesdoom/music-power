@@ -4,6 +4,7 @@ import test from "node:test";
 import { CHORDS, type ChordId } from "./chord-data";
 import {
   getChordPitchClasses,
+  getChordVoicingOptions,
   getLowARootFret,
   getLowERootFret,
   getPreferredVoicing,
@@ -31,12 +32,37 @@ test("A-string root positions transpose and wrap chromatically", () => {
 test("familiar open shapes are preferred before movable fallbacks", () => {
   assert.equal(getPreferredVoicing(0, "major").name, "Open C");
   assert.equal(getPreferredVoicing(9, "minor").name, "Open A minor");
-  assert.equal(getPreferredVoicing(1, "major").kind, "movable");
+  assert.equal(getPreferredVoicing(1, "major").kind, "barre");
   assert.equal(getPreferredVoicing(11, "major").name, "Low-A root shape");
   assert.deepEqual(
     getPreferredVoicing(11, "major").strings.map((string) => string.fret),
     [null, 2, 4, 4, 4, 2],
   );
+});
+
+test("alternate voicings retain only chord tones and keep preferred first", () => {
+  for (const chordId of Object.keys(CHORDS) as ChordId[]) {
+    for (let root = 0; root < 12; root += 1) {
+      const options = getChordVoicingOptions(root, chordId);
+      assert.equal(
+        options[0].voicing.name,
+        getPreferredVoicing(root, chordId).name,
+      );
+      assert.ok(options.some((option) => option.category === "Inversion"));
+      for (const option of options) {
+        const chordTones = new Set(getChordPitchClasses(root, chordId));
+        const sounding = getVoicingPitchClasses(
+          root,
+          chordId,
+          option.voicing,
+        ).filter((pitchClass): pitchClass is number => pitchClass !== null);
+        assert.ok(
+          sounding.every((pitchClass) => chordTones.has(pitchClass)),
+          `${root} ${chordId} ${option.key} contains a non-chord tone`,
+        );
+      }
+    }
+  }
 });
 
 test("every preferred voicing contains only chord tones and all defining tones", () => {

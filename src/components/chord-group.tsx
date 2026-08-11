@@ -205,6 +205,7 @@ export function ChordGroup({
                   <CompactChordDiagram
                     root={item.root}
                     chordId={item.chordId}
+                    voicingKey={item.voicingKey}
                     noteNames={noteNames}
                   />
                 </article>

@@ -29,6 +29,7 @@ import { ChordToolbar } from "./chord-toolbar";
 export function ChordExplorer() {
   const [root, setRoot] = useState(0);
   const [chordId, setChordId] = useState<ChordId>("major");
+  const [voicingKey, setVoicingKey] = useState<string | undefined>();
   const [labels, setLabels] = useState<MarkerLabel>("notes");
   const [accidentals, setAccidentals] =
     useState<AccidentalPreference>("sharps");
@@ -79,12 +80,16 @@ export function ChordExplorer() {
       (highest, item) => Math.max(highest, item.id + 1),
       1,
     );
-    setEditedGroup([...chordGroup, { id: nextId, root, chordId }]);
+    setEditedGroup([
+      ...chordGroup,
+      { id: nextId, root, chordId, ...(voicingKey ? { voicingKey } : {}) },
+    ]);
   }
 
   function viewChord(item: ChordGroupItem) {
     setRoot(item.root);
     setChordId(item.chordId);
+    setVoicingKey(item.voicingKey);
   }
 
   async function copyShareLink() {
@@ -112,8 +117,14 @@ export function ChordExplorer() {
         labels={labels}
         accidentals={accidentals}
         noteNames={noteNames}
-        onRootChange={setRoot}
-        onChordChange={setChordId}
+        onRootChange={(value) => {
+          setRoot(value);
+          setVoicingKey(undefined);
+        }}
+        onChordChange={(value) => {
+          setChordId(value);
+          setVoicingKey(undefined);
+        }}
         onLabelsChange={setLabels}
         onAccidentalsChange={setAccidentals}
       />
@@ -128,6 +139,8 @@ export function ChordExplorer() {
         chordId={chordId}
         labels={labels}
         noteNames={noteNames}
+        voicingKey={voicingKey}
+        onVoicingChange={setVoicingKey}
       />
       <ChordGroup
         items={chordGroup}

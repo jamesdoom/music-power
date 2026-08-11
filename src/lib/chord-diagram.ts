@@ -1,5 +1,5 @@
 import { CHORDS, type ChordId } from "./chord-data";
-import { getPreferredVoicing, getVoicingPitchClasses } from "./chord-theory";
+import { getChordVoicingOption, getVoicingPitchClasses } from "./chord-theory";
 import { STANDARD_TUNING } from "./music-data";
 import { normalizePitchClass } from "./music-theory";
 
@@ -13,12 +13,27 @@ export type ChordDiagramString = {
   isRoot: boolean;
 };
 
-export function createChordDiagramModel(root: number, chordId: ChordId) {
+export function createChordDiagramModel(
+  root: number,
+  chordId: ChordId,
+  voicingKey?: string,
+) {
   const chord = CHORDS[chordId];
-  const voicing = getPreferredVoicing(root, chordId);
+  const option = getChordVoicingOption(root, chordId, voicingKey);
+  const voicing = option.voicing;
   const rootFret = voicing.rootFret ?? 0;
-  const firstFret = voicing.kind === "open" ? 0 : rootFret;
-  const frets = Array.from({ length: 5 }, (_, index) => firstFret + index);
+  const soundingFrets = voicing.strings.flatMap((string) =>
+    string.fret === null ? [] : [string.fret],
+  );
+  const firstFret = soundingFrets.includes(0)
+    ? 0
+    : Math.max(1, Math.min(...soundingFrets));
+  const lastFret = Math.max(...soundingFrets);
+  const fretCount = Math.max(5, lastFret - firstFret + 1);
+  const frets = Array.from(
+    { length: fretCount },
+    (_, index) => firstFret + index,
+  );
   const pitchClasses = [
     ...getVoicingPitchClasses(root, chordId, voicing),
   ].reverse();
@@ -41,7 +56,7 @@ export function createChordDiagramModel(root: number, chordId: ChordId) {
     };
   });
 
-  return { chord, voicing, rootFret, frets, strings };
+  return { chord, option, voicing, rootFret, frets, strings };
 }
 
 export type ChordDiagramModel = ReturnType<typeof createChordDiagramModel>;

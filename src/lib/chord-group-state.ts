@@ -4,11 +4,26 @@ export const CHORD_GROUP_STORAGE_KEY = "music-power:chord-group:v1";
 export const MAX_SAVED_CHORDS = 32;
 export const SERVER_CHORD_GROUP_SNAPSHOT = "server";
 
-export type SavedChord = { root: number; chordId: ChordId };
+export type SavedChord = {
+  root: number;
+  chordId: ChordId;
+  voicingKey?: string;
+};
 export type ChordGroupItem = SavedChord & { id: number };
 
 function isChordId(value: string): value is ChordId {
   return value in CHORDS;
+}
+
+function isVoicingKey(value: string | undefined, chordId: ChordId): boolean {
+  if (value === undefined) return true;
+  if (["open", "low-a", "low-e"].includes(value)) return true;
+  const match = /^inversion-(\d+)$/.exec(value);
+  return Boolean(
+    match &&
+    Number(match[1]) > 0 &&
+    Number(match[1]) < CHORDS[chordId].intervals.length,
+  );
 }
 
 export function parseChordGroup(value: string | null): SavedChord[] {
@@ -18,15 +33,16 @@ export function parseChordGroup(value: string | null): SavedChord[] {
     .split(",")
     .slice(0, MAX_SAVED_CHORDS)
     .flatMap((entry) => {
-      const [rootValue, chordId, ...extra] = entry.split(".");
+      const [rootValue, chordId, voicingKey, ...extra] = entry.split(".");
       const root = Number(rootValue);
       return extra.length === 0 &&
         Number.isInteger(root) &&
         root >= 0 &&
         root < 12 &&
         chordId &&
-        isChordId(chordId)
-        ? [{ root, chordId }]
+        isChordId(chordId) &&
+        isVoicingKey(voicingKey, chordId)
+        ? [{ root, chordId, ...(voicingKey ? { voicingKey } : {}) }]
         : [];
     });
 }
@@ -34,7 +50,11 @@ export function parseChordGroup(value: string | null): SavedChord[] {
 export function serializeChordGroup(items: readonly SavedChord[]): string {
   return items
     .slice(0, MAX_SAVED_CHORDS)
-    .map(({ root, chordId }) => `${root}.${chordId}`)
+    .map(({ root, chordId, voicingKey }) =>
+      [root, chordId, voicingKey]
+        .filter((value) => value !== undefined)
+        .join("."),
+    )
     .join(",");
 }
 
