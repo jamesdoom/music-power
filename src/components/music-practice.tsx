@@ -1,8 +1,7 @@
 import Image from "next/image";
-import { Suspense } from "react";
 
 import { PracticePulse } from "./practice-pulse";
-import { ScaleExplorer } from "./scale-explorer";
+import { PracticeExplorer } from "./practice-explorer";
 
 export function MusicPractice() {
   return (
@@ -21,23 +20,12 @@ export function MusicPractice() {
             />
           </h1>
           <p className="lede">
-            Choose a key and trace its shape across every string.
+            Explore the notes, shapes, and fingerings that power your playing.
           </p>
         </header>
         <PracticePulse />
       </div>
-      <Suspense
-        fallback={
-          <section
-            className="explorer explorer-loading"
-            aria-label="Loading scale explorer"
-          >
-            Loading fretboard…
-          </section>
-        }
-      >
-        <ScaleExplorer />
-      </Suspense>
+      <PracticeExplorer />
     </main>
   );
 }

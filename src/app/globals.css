@@ -245,6 +245,41 @@ h1 {
   overflow: hidden;
 }
 
+.explorer-mode {
+  display: inline-flex;
+  margin-top: clamp(1.75rem, 3.5vw, 3rem);
+  padding: 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: rgba(253, 255, 252, 0.9);
+  box-shadow: 0 0.5rem 1.5rem rgba(1, 22, 39, 0.08);
+}
+
+.explorer-mode button {
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.explorer-mode button[aria-pressed="true"] {
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.explorer-mode button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.explorer-mode + .explorer {
+  margin-top: 0.75rem;
+}
+
 .controls {
   display: grid;
   grid-template-columns:
@@ -412,6 +447,217 @@ input:focus-visible + span,
   color: var(--muted);
   font-size: 0.74rem;
   font-weight: 550;
+}
+
+.chord-controls {
+  grid-template-columns: minmax(7rem, 0.7fr) minmax(11rem, 1fr) auto auto;
+}
+
+.chord-summary {
+  align-items: center;
+}
+
+.chord-quality-name {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.chord-notation-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.chord-notation-legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.chord-notation-legend b {
+  color: var(--ink);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.chord-diagram-region {
+  padding: 0 clamp(1rem, 4vw, 2.5rem) 1.5rem;
+}
+
+.mini-neck-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.mini-neck-heading h3,
+.mini-neck-heading p {
+  margin: 0;
+}
+
+.mini-neck-heading h3 {
+  font-size: 1.05rem;
+}
+
+.mini-neck-heading > p {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.mini-neck-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  scrollbar-color: var(--wood-dark) transparent;
+}
+
+.mini-neck-scroll:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.mini-neck {
+  display: grid;
+  min-width: 36rem;
+  grid-template-columns: 5rem repeat(var(--mini-frets), minmax(5.5rem, 1fr));
+  background: var(--wood);
+}
+
+.mini-neck-corner,
+.mini-fret-number {
+  display: grid;
+  min-height: 2rem;
+  place-items: center;
+  color: var(--muted);
+  background: var(--panel);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.7rem;
+}
+
+.mini-neck-corner {
+  justify-items: start;
+  padding-left: 0.7rem;
+}
+
+.mini-string-contents {
+  display: contents;
+}
+
+.mini-string-label {
+  display: flex;
+  min-height: 3.8rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.7rem;
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.mini-string-label span {
+  color: var(--focus);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.78rem;
+}
+
+.mini-fret-cell {
+  position: relative;
+  display: grid;
+  min-height: 3.8rem;
+  place-items: center;
+  border-right: 2px solid rgba(1, 22, 39, 0.32);
+  background: linear-gradient(90deg, transparent, rgba(253, 255, 252, 0.45));
+}
+
+.mini-fret-cell.open-mini-fret {
+  border-right: 5px double var(--ink);
+  background: rgba(255, 159, 28, 0.12);
+}
+
+.mini-fret-cell.barre-cell::after {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 0.72rem;
+  background: rgba(1, 22, 39, 0.78);
+  content: "";
+  translate: -50% 0;
+}
+
+.mini-string-line {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: calc(1px + var(--string-gauge, 1) * 0.35px);
+  translate: 0 -50%;
+  background: rgba(1, 22, 39, 0.65);
+}
+
+.gauge-1 {
+  --string-gauge: 1;
+}
+.gauge-2 {
+  --string-gauge: 2;
+}
+.gauge-3 {
+  --string-gauge: 3;
+}
+.gauge-4 {
+  --string-gauge: 4;
+}
+.gauge-5 {
+  --string-gauge: 5;
+}
+.gauge-6 {
+  --string-gauge: 6;
+}
+
+.chord-note-marker {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 2.65rem;
+  height: 2.65rem;
+  place-items: center;
+  border: 2px solid var(--accent-dark);
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--accent);
+  box-shadow: 0 2px 5px rgba(1, 22, 39, 0.25);
+  font-family: var(--font-geist-mono), monospace;
+  font-style: normal;
+}
+
+.chord-note-marker.root-note {
+  color: var(--paper);
+  background: var(--root);
+}
+
+.chord-note-marker em {
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 750;
+}
+
+.chord-note-marker small {
+  position: absolute;
+  right: -0.3rem;
+  bottom: -0.3rem;
+  display: grid;
+  width: 1.1rem;
+  height: 1.1rem;
+  place-items: center;
+  border: 1px solid var(--paper);
+  border-radius: 50%;
+  color: var(--paper);
+  background: var(--ink);
+  font-size: 0.6rem;
+  font-weight: 800;
 }
 
 .legend {
@@ -800,6 +1046,9 @@ input:focus-visible + span,
   .controls {
     grid-template-columns: 1fr 1.4fr 1fr;
   }
+  .chord-controls {
+    grid-template-columns: 1fr 1fr;
+  }
   .segmented-control label {
     flex: 1;
   }
@@ -823,6 +1072,11 @@ input:focus-visible + span,
   .controls {
     grid-template-columns: 1fr 1fr;
     padding: 1rem;
+  }
+  .explorer-mode {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
   }
   .scale-control {
     grid-column: 2;
@@ -862,6 +1116,9 @@ input:focus-visible + span,
 
 @media (max-width: 30rem) {
   .controls {
+    grid-template-columns: 1fr;
+  }
+  .chord-controls {
     grid-template-columns: 1fr;
   }
   .scale-control {

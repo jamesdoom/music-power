@@ -291,3 +291,45 @@ test("core interactions do not produce browser errors", async ({ page }) => {
 
   expect(errors).toEqual([]);
 });
+
+test("chord explorer renders and updates a horizontal six-string voicing", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "Chord explorer" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "C", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Chord notes")).toContainText("C");
+  await expect(page.getByLabel("Chord notes")).toContainText("E");
+  await expect(page.getByLabel("Chord notes")).toContainText("G");
+  await expect(page.locator(".chord-note-marker")).toHaveCount(6);
+
+  await page.getByLabel("Root note").selectOption("7");
+  await page.getByLabel("Chord quality").selectOption("dominant7");
+
+  await expect(
+    page.getByRole("heading", { name: "G7", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Chord formula")).toContainText("♭7");
+  await expect(page.getByText("Root at fret")).toContainText("3");
+  await expect(page.locator(".chord-note-marker.root-note")).toHaveCount(2);
+
+  await page.getByText("Degrees", { exact: true }).click();
+  await expect(page.locator(".chord-note-marker").first()).toContainText(
+    /1|3|5|♭7/,
+  );
+});
+
+test("chord diagram and mode controls are keyboard accessible", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "Chord explorer" }).click();
+  const diagram = page.getByLabel(/chord diagram/);
+  await expect(diagram).toBeVisible();
+  await diagram.focus();
+  await expect(diagram).toBeFocused();
+  await expect(
+    page.getByRole("button", { name: "Scale explorer" }),
+  ).toHaveAttribute("aria-pressed", "false");
+});
