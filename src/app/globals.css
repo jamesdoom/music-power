@@ -789,6 +789,100 @@ input:focus-visible + span,
   font-size: 0.74rem;
 }
 
+.song-structure-controls {
+  display: grid;
+  grid-template-columns:
+    minmax(12rem, 1.4fr) minmax(9rem, 1fr) minmax(8rem, 0.7fr)
+    minmax(14rem, 1.2fr);
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--paper) 80%, var(--accent));
+}
+
+.song-structure-controls label {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.song-structure-controls input,
+.song-structure-controls select {
+  width: 100%;
+  min-height: var(--control-height);
+  padding-inline: 0.65rem;
+  border: 1px solid rgba(1, 22, 39, 0.28);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  background: var(--paper);
+  font: inherit;
+}
+
+.new-section-control > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem;
+}
+
+.new-section-control button {
+  min-width: 3.5rem;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-sm);
+  color: var(--paper);
+  background: var(--ink);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.new-section-control button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.song-section-overview {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  margin-top: 0.65rem;
+  padding-bottom: 0.15rem;
+}
+
+.song-section-overview button {
+  display: grid;
+  flex: 0 0 auto;
+  min-width: 8.5rem;
+  min-height: 3rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: left;
+}
+
+.song-section-overview button[aria-pressed="true"] {
+  border-color: var(--focus);
+  box-shadow: inset 0 0 0 2px var(--focus);
+}
+
+.song-section-overview span {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.song-structure-controls input:focus-visible,
+.song-structure-controls select:focus-visible,
+.new-section-control button:focus-visible,
+.song-section-overview button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
 .clear-chord-group,
 .share-chord-group,
 .voice-leading-toggle,
@@ -1514,6 +1608,9 @@ input:focus-visible + span,
   .segmented-control label {
     flex: 1;
   }
+  .song-structure-controls {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 42rem) {
@@ -1588,6 +1685,9 @@ input:focus-visible + span,
   }
   .chord-group {
     padding-inline: 0.75rem;
+  }
+  .song-structure-controls {
+    grid-template-columns: 1fr;
   }
   .chord-diagram-region {
     padding-inline: 0.75rem;

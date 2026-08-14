@@ -5,8 +5,13 @@ import { useMemo, useState } from "react";
 import { moveItem } from "@/lib/array-order";
 import { CHORDS } from "@/lib/chord-data";
 import type { ChordGroupItem } from "@/lib/chord-group-state";
+import {
+  MAX_SONG_SECTIONS,
+  type SongStructure,
+} from "@/lib/song-structure-state";
 import { compareChordVoicings } from "@/lib/voice-leading";
 import { CompactChordDiagram } from "./compact-chord-diagram";
+import { SongStructureControls } from "./song-structure-controls";
 
 export type { ChordGroupItem } from "@/lib/chord-group-state";
 
@@ -17,6 +22,10 @@ type Props = {
   onView: (item: ChordGroupItem) => void;
   onCopyLink: () => void;
   shareStatus: string;
+  structure: SongStructure;
+  activeSectionId: string;
+  onStructureChange: (structure: SongStructure) => void;
+  onActiveSectionChange: (sectionId: string) => void;
 };
 
 export function ChordGroup({
@@ -26,6 +35,10 @@ export function ChordGroup({
   onView,
   onCopyLink,
   shareStatus,
+  structure,
+  activeSectionId,
+  onStructureChange,
+  onActiveSectionChange,
 }: Props) {
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [dropTargetId, setDropTargetId] = useState<number | null>(null);
@@ -53,6 +66,17 @@ export function ChordGroup({
     setSettledId(item.id);
     setDraggedId(null);
     setDropTargetId(null);
+  }
+
+  function addSection(name: string) {
+    if (structure.sections.length >= MAX_SONG_SECTIONS) return;
+    const id = `section-${structure.sections.length + 1}`;
+    onStructureChange({
+      ...structure,
+      sections: [...structure.sections, { id, name, repeats: 1 }],
+    });
+    onActiveSectionChange(id);
+    setAnnouncement(`${name} section added and selected.`);
   }
 
   return (
@@ -94,6 +118,42 @@ export function ChordGroup({
           </div>
         )}
       </div>
+      <SongStructureControls
+        structure={structure}
+        activeSectionId={activeSectionId}
+        onTitleChange={(title) => onStructureChange({ ...structure, title })}
+        onActiveSectionChange={onActiveSectionChange}
+        onRepeatChange={(sectionId, repeats) =>
+          onStructureChange({
+            ...structure,
+            sections: structure.sections.map((section) =>
+              section.id === sectionId ? { ...section, repeats } : section,
+            ),
+          })
+        }
+        onAddSection={addSection}
+      />
+      <div className="song-section-overview" aria-label="Song sections">
+        {structure.sections.map((section) => {
+          const count = items.filter(
+            (item) =>
+              (item.sectionId ?? structure.sections[0].id) === section.id,
+          ).length;
+          return (
+            <button
+              type="button"
+              key={section.id}
+              aria-pressed={section.id === activeSectionId}
+              onClick={() => onActiveSectionChange(section.id)}
+            >
+              <strong>{section.name}</strong>
+              <span>
+                {count} {count === 1 ? "chord" : "chords"} · {section.repeats}×
+              </span>
+            </button>
+          );
+        })}
+      </div>
       {items.length > 0 && (
         <p className="chord-reorder-help" id="chord-reorder-instructions">
           Drag a card header to reorder. Keyboard users can focus a header and
@@ -124,6 +184,11 @@ export function ChordGroup({
         >
           {items.map((item, index) => {
             const name = chordName(item, noteNames);
+            const section =
+              structure.sections.find(
+                (candidate) =>
+                  candidate.id === (item.sectionId ?? structure.sections[0].id),
+              ) ?? structure.sections[0];
             const transition = transitions[index];
             const previousName =
               index > 0 ? chordName(items[index - 1], noteNames) : "";
@@ -199,7 +264,9 @@ export function ChordGroup({
                     </span>
                     <div>
                       <h4>{name}</h4>
-                      <p>{CHORDS[item.chordId].name}</p>
+                      <p>
+                        {CHORDS[item.chordId].name} · {section.name}
+                      </p>
                     </div>
                     <div className="chord-card-actions">
                       <button

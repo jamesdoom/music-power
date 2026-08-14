@@ -498,7 +498,7 @@ test("builds an ordered chord group with compact playable fingerings", async ({
     "aria-keyshortcuts",
     "ArrowLeft ArrowRight",
   );
-  await page.getByRole("button", { name: "Clear group" }).focus();
+  await page.getByLabel("Song sections").getByRole("button").last().focus();
   await page.keyboard.press("Tab");
   await expect(firstHeader).toBeFocused();
   await expect(firstHeader).toHaveCSS("outline-style", "solid");
@@ -610,4 +610,41 @@ test("persists, restores, and shares an ordered chord group", async ({
       page.evaluate(() => localStorage.getItem("music-power:chord-group:v1")),
     )
     .toBeNull();
+});
+
+test("organizes a saved chord workspace into named repeating sections", async ({
+  page,
+}) => {
+  await openChordExplorer(page);
+  await page.getByLabel("Song title").fill("Midnight Drive");
+  await page.getByLabel("New section").fill("Chorus");
+  await page.getByRole("button", { name: "Add", exact: true }).click();
+
+  await expect(page.getByLabel("Add chords to")).toHaveValue("section-2");
+  await page.getByLabel("Section repeats").selectOption("2");
+  await page.getByRole("button", { name: "Add C to group" }).click();
+
+  await page.getByLabel("Add chords to").selectOption("main");
+  await page.getByLabel("Root note").selectOption("7");
+  await page.getByRole("button", { name: "Add G to group" }).click();
+
+  const sections = page.getByLabel("Song sections");
+  await expect(sections.getByRole("button", { name: /Chorus/ })).toContainText(
+    "1 chord · 2×",
+  );
+  await expect(sections.getByRole("button", { name: /Main/ })).toContainText(
+    "1 chord · 1×",
+  );
+  const progression = page.getByLabel("Selected chord progression");
+  await expect(progression.getByText("Major · Chorus")).toBeVisible();
+  await expect(progression.getByText("Major · Main")).toBeVisible();
+  await expect(page).toHaveURL(/song=/);
+  await expect(page).toHaveURL(/0.major.preferred.section-2/);
+
+  await page.reload();
+  await expect(page.getByLabel("Song title")).toHaveValue("Midnight Drive");
+  await expect(sections.getByRole("button", { name: /Chorus/ })).toContainText(
+    "1 chord · 2×",
+  );
+  await expect(progression.getByRole("heading")).toHaveText(["C", "G"]);
 });

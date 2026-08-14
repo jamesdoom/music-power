@@ -21,6 +21,18 @@ import {
   type AccidentalPreference,
 } from "@/lib/music-data";
 import type { MarkerLabel } from "@/lib/selection-state";
+import {
+  getServerSongStructureSnapshot,
+  getSongStructureSnapshot,
+  isDefaultSongStructure,
+  parseSongStructure,
+  SERVER_SONG_STRUCTURE_SNAPSHOT,
+  serializeSongStructure,
+  SONG_STRUCTURE_STORAGE_KEY,
+  songStructureValueFromSnapshot,
+  subscribeToSongStructureSnapshot,
+  type SongStructure,
+} from "@/lib/song-structure-state";
 import { ChordDiagram } from "./chord-diagram";
 import { ChordGroup } from "./chord-group";
 import { ChordSummary } from "./chord-summary";
@@ -47,6 +59,28 @@ export function ChordExplorer() {
   );
   const [editedGroup, setEditedGroup] = useState<ChordGroupItem[] | null>(null);
   const [shareStatus, setShareStatus] = useState("");
+  const savedStructureSnapshot = useSyncExternalStore(
+    subscribeToSongStructureSnapshot,
+    getSongStructureSnapshot,
+    getServerSongStructureSnapshot,
+  );
+  const restoredStructure = useMemo(
+    () =>
+      parseSongStructure(
+        songStructureValueFromSnapshot(savedStructureSnapshot),
+      ),
+    [savedStructureSnapshot],
+  );
+  const [editedStructure, setEditedStructure] = useState<SongStructure | null>(
+    null,
+  );
+  const [selectedSectionId, setSelectedSectionId] = useState("main");
+  const structure = editedStructure ?? restoredStructure;
+  const activeSectionId = structure.sections.some(
+    (section) => section.id === selectedSectionId,
+  )
+    ? selectedSectionId
+    : structure.sections[0].id;
   const chordGroup = editedGroup ?? restoredGroup;
   const noteNames =
     accidentals === "flats" ? CHROMATIC_FLATS : CHROMATIC_SHARPS;
@@ -75,6 +109,27 @@ export function ChordExplorer() {
     }
   }, [chordGroup, savedGroupSnapshot]);
 
+  useEffect(() => {
+    if (savedStructureSnapshot === SERVER_SONG_STRUCTURE_SNAPSHOT) return;
+    const value = serializeSongStructure(structure);
+    const url = new URL(window.location.href);
+    if (isDefaultSongStructure(structure)) {
+      url.searchParams.delete("song");
+    } else {
+      url.searchParams.set("song", value);
+    }
+    window.history.replaceState(null, "", url);
+    try {
+      if (isDefaultSongStructure(structure)) {
+        window.localStorage.removeItem(SONG_STRUCTURE_STORAGE_KEY);
+      } else {
+        window.localStorage.setItem(SONG_STRUCTURE_STORAGE_KEY, value);
+      }
+    } catch {
+      // Shared URL metadata remains available when storage is blocked.
+    }
+  }, [savedStructureSnapshot, structure]);
+
   function addCurrentChord() {
     const nextId = chordGroup.reduce(
       (highest, item) => Math.max(highest, item.id + 1),
@@ -82,7 +137,13 @@ export function ChordExplorer() {
     );
     setEditedGroup([
       ...chordGroup,
-      { id: nextId, root, chordId, ...(voicingKey ? { voicingKey } : {}) },
+      {
+        id: nextId,
+        root,
+        chordId,
+        sectionId: activeSectionId,
+        ...(voicingKey ? { voicingKey } : {}),
+      },
     ]);
   }
 
@@ -96,6 +157,9 @@ export function ChordExplorer() {
     const url = new URL(window.location.href);
     url.searchParams.set("chords", serializeChordGroup(chordGroup));
     url.searchParams.set("tool", "chords");
+    if (!isDefaultSongStructure(structure)) {
+      url.searchParams.set("song", serializeSongStructure(structure));
+    }
     window.history.replaceState(null, "", url);
 
     try {
@@ -149,6 +213,10 @@ export function ChordExplorer() {
         onView={viewChord}
         onCopyLink={copyShareLink}
         shareStatus={shareStatus}
+        structure={structure}
+        activeSectionId={activeSectionId}
+        onStructureChange={setEditedStructure}
+        onActiveSectionChange={setSelectedSectionId}
       />
     </section>
   );

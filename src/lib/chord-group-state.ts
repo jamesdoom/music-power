@@ -8,6 +8,7 @@ export type SavedChord = {
   root: number;
   chordId: ChordId;
   voicingKey?: string;
+  sectionId?: string;
 };
 export type ChordGroupItem = SavedChord & { id: number };
 
@@ -17,6 +18,7 @@ function isChordId(value: string): value is ChordId {
 
 function isVoicingKey(value: string | undefined, chordId: ChordId): boolean {
   if (value === undefined) return true;
+  if (value === "preferred") return true;
   if (["open", "low-a", "low-e"].includes(value)) return true;
   const match = /^inversion-(\d+)$/.exec(value);
   return Boolean(
@@ -33,7 +35,8 @@ export function parseChordGroup(value: string | null): SavedChord[] {
     .split(",")
     .slice(0, MAX_SAVED_CHORDS)
     .flatMap((entry) => {
-      const [rootValue, chordId, voicingKey, ...extra] = entry.split(".");
+      const [rootValue, chordId, voicingKey, sectionId, ...extra] =
+        entry.split(".");
       const root = Number(rootValue);
       return extra.length === 0 &&
         Number.isInteger(root) &&
@@ -42,7 +45,16 @@ export function parseChordGroup(value: string | null): SavedChord[] {
         chordId &&
         isChordId(chordId) &&
         isVoicingKey(voicingKey, chordId)
-        ? [{ root, chordId, ...(voicingKey ? { voicingKey } : {}) }]
+        ? [
+            {
+              root,
+              chordId,
+              ...(voicingKey && voicingKey !== "preferred"
+                ? { voicingKey }
+                : {}),
+              ...(sectionId ? { sectionId: sectionId.slice(0, 24) } : {}),
+            },
+          ]
         : [];
     });
 }
@@ -50,11 +62,13 @@ export function parseChordGroup(value: string | null): SavedChord[] {
 export function serializeChordGroup(items: readonly SavedChord[]): string {
   return items
     .slice(0, MAX_SAVED_CHORDS)
-    .map(({ root, chordId, voicingKey }) =>
-      [root, chordId, voicingKey]
-        .filter((value) => value !== undefined)
-        .join("."),
-    )
+    .map(({ root, chordId, voicingKey, sectionId }) => {
+      const values = [String(root), chordId];
+      const savedSectionId = sectionId === "main" ? undefined : sectionId;
+      if (voicingKey || savedSectionId) values.push(voicingKey ?? "preferred");
+      if (savedSectionId) values.push(savedSectionId);
+      return values.join(".");
+    })
     .join(",");
 }
 
